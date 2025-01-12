@@ -1,0 +1,84 @@
+<article class="about active" data-page="about">
+    <header>
+      <h2 class="h2 article-title">{{ about.title }}</h2>
+    </header>
+  
+    <section class="about-text">
+      {% for paragraph in about.description %}
+      <p>{{ paragraph }}</p>
+      {% endfor %}
+    </section>
+  
+    <!-- Services -->
+    <section class="service">
+      <h3 class="h3 service-title">{{ about.services.title }}</h3>
+      <ul class="service-list">
+        {% for service in about.services.list %}
+        <li class="service-item">
+          <div class="service-icon-box">
+            <img src="{{ service.icon }}" alt="{{ service.title }} icon" width="40">
+          </div>
+          <div class="service-content-box">
+            <h4 class="h4 service-item-title">{{ service.title }}</h4>
+            <p class="service-item-text">{{ service.description }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  
+    <!-- Testimonials -->
+    <section class="testimonials">
+      <h3 class="h3 testimonials-title">Testimonials</h3>
+      <ul class="testimonials-list has-scrollbar">
+        {% for testimonial in about.testimonials %}
+        <li class="testimonials-item">
+          <div class="content-card" data-testimonials-item>
+            <figure class="testimonials-avatar-box">
+              <img src="{{ testimonial.avatar }}" alt="{{ testimonial.name }}" width="60" data-testimonials-avatar>
+            </figure>
+            <h4 class="h4 testimonials-item-title" data-testimonials-title>{{ testimonial.name }}</h4>
+            <div class="testimonials-text" data-testimonials-text>
+              <p>{{ testimonial.text }}</p>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  
+    <!-- Testimonials Modal -->
+    <div class="modal-container" data-modal-container>
+      <div class="overlay" data-overlay></div>
+      <section class="testimonials-modal">
+        <button class="modal-close-btn" data-modal-close-btn>
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+        <div class="modal-img-wrapper">
+          <figure class="modal-avatar-box">
+            <img src="" alt="" width="80" data-modal-img>
+          </figure>
+          <img src="./assets/images/icon-quote.svg" alt="quote icon">
+        </div>
+        <div class="modal-content">
+          <h4 class="h3 modal-title" data-modal-title></h4>
+          <time datetime=""></time>
+          <div data-modal-text></div>
+        </div>
+      </section>
+    </div>
+  
+    <!-- Clients -->
+    <section class="clients">
+      <h3 class="h3 clients-title">Clients</h3>
+      <ul class="clients-list has-scrollbar">
+        {% for client in about.clients %}
+        <li class="clients-item">
+          <a href="#">
+            <img src="{{ client }}" alt="client logo">
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </article>

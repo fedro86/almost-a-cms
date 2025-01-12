@@ -1,0 +1,104 @@
+{
+    "title": "Portfolio",
+    "categories": [
+      {
+        "name": "All",
+        "isActive": true
+      },
+      {
+        "name": "Web design",
+        "isActive": false
+      },
+      {
+        "name": "Applications",
+        "isActive": false  
+      },
+      {
+        "name": "Web development",
+        "isActive": false
+      }
+    ],
+    "projects": [
+      {
+        "category": "web development",
+        "image": {
+          "src": "./assets/images/project-1.jpg",
+          "alt": "finance"
+        },
+        "title": "Finance",
+        "isActive": true
+      },
+      {
+        "category": "web development",
+        "image": {
+          "src": "./assets/images/project-2.png",
+          "alt": "orizon"
+        },
+        "title": "Orizon",
+        "isActive": true
+      },
+      {
+        "category": "web design",
+        "image": {
+          "src": "./assets/images/project-3.jpg",
+          "alt": "fundo"
+        },
+        "title": "Fundo",
+        "isActive": true
+      },
+      {
+        "category": "applications",
+        "image": {
+          "src": "./assets/images/project-4.png",
+          "alt": "brawlhalla"
+        },
+        "title": "Brawlhalla",
+        "isActive": true
+      },
+      {
+        "category": "web design",
+        "image": {
+          "src": "./assets/images/project-5.png",
+          "alt": "dsm"
+        },
+        "title": "DSM.",
+        "isActive": true
+      },
+      {
+        "category": "web design",
+        "image": {
+          "src": "./assets/images/project-6.png",
+          "alt": "metaspark"
+        },
+        "title": "MetaSpark",
+        "isActive": true
+      },
+      {
+        "category": "web development",
+        "image": {
+          "src": "./assets/images/project-7.png",
+          "alt": "summary"
+        },
+        "title": "Summary",
+        "isActive": true
+      },
+      {
+        "category": "applications",
+        "image": {
+          "src": "./assets/images/project-8.jpg",
+          "alt": "task manager"
+        },
+        "title": "Task Manager",
+        "isActive": true
+      },
+      {
+        "category": "web development",
+        "image": {
+          "src": "./assets/images/project-9.png",
+          "alt": "arrival"
+        },
+        "title": "Arrival",
+        "isActive": true
+      }
+    ]
+  }

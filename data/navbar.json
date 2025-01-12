@@ -1,0 +1,24 @@
+{
+    "list": [
+      {
+        "name": "About",
+        "isActive": true
+      },
+      {
+        "name": "Resume",
+        "isActive": false
+      },
+      {
+        "name": "Portfolio",
+        "isActive": false
+      },
+      {
+        "name": "Blog",
+        "isActive": false
+      },
+      {
+        "name": "Contact",
+        "isActive": false
+      }
+    ]
+  }
