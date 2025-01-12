@@ -78,7 +78,8 @@ pip install flask jinja2
 
 There are two primary ways to edit the website content:
 
-1. Command-Line Generation
+1. Command-Line Generation:
+
     Edit the JSON files in data/. For example, open data/about.json and change the "name" or "description" field.
     Run the generator script:
     ```
@@ -86,7 +87,9 @@ There are two primary ways to edit the website content:
     ```
     This command regenerates index.html with your updated content.
     Push your changes (including the new index.html) to GitHub to publish or update your GitHub Pages site.
-2. Flask Backend
+
+2. Flask Backend:
+
     1. Run the Flask server:
     ```
     python app.py
@@ -113,7 +116,7 @@ There are two primary ways to edit the website content:
 │   └── template_index.html      # Jinja2 template used to generate index.html
 ├── index_html_generator.py      # Script to generate index.html from the JSON files
 ├── app.py                       # Flask backend for editing JSON data
-├── requirements.txt             # (Optional) Python dependencies
+├── environment.yaml             # (Optional) Python dependencies
 └── README.md                    # This file
 ```
 - data/ contains the JSON files for each site section.
