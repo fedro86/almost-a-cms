@@ -251,8 +251,10 @@ class FormSchemaGenerator:
             "file" in field_name_lower
             or "avatar" in field_name_lower
             or "image" in field_name_lower
+            or "photo" in field_name_lower
+            or "media" in field_name_lower
         ):
-            return "file"
+            return "media_upload"
 
         # Check max_length for textarea detection
         if (

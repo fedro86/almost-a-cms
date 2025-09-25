@@ -20,10 +20,10 @@ console = Console()
 
 @app.command()
 def serve(
-    host: str = typer.Option(default=None, help="Host to bind to"),
-    port: int = typer.Option(default=None, help="Port to bind to"),
-    reload: bool = typer.Option(default=None, help="Enable auto-reload"),
-    debug: bool = typer.Option(default=None, help="Enable debug mode"),
+    host: Optional[str] = typer.Option(None, help="Host to bind to"),
+    port: Optional[int] = typer.Option(None, help="Port to bind to"),
+    reload: Optional[bool] = typer.Option(None, help="Enable auto-reload"),
+    debug: Optional[bool] = typer.Option(None, help="Enable debug mode"),
 ) -> None:
     """Start the development server."""
     # Use settings defaults if not provided
@@ -61,7 +61,7 @@ def serve(
 @app.command()
 def init(
     directory: Optional[Path] = typer.Argument(None, help="Directory to initialize"),
-    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files"),
+    force: bool = typer.Option(False, "--force", help="Overwrite existing files"),
 ) -> None:
     """Initialize a new Almost-a-CMS project."""
     target_dir = directory or Path.cwd()
@@ -165,10 +165,8 @@ def version() -> None:
 
 @app.command()
 def build(
-    theme: Optional[str] = typer.Option(
-        None, "--theme", "-t", help="Theme to use for build"
-    ),
-    output: str = typer.Option("site", "--output", "-o", help="Output directory name"),
+    theme: Optional[str] = typer.Option(None, "--theme", help="Theme to use for build"),
+    output: str = typer.Option("site", "--output", help="Output directory name"),
     optimize: bool = typer.Option(
         True, "--optimize/--no-optimize", help="Optimize assets"
     ),
@@ -237,9 +235,9 @@ def build(
 @app.command()
 def preview(
     theme: Optional[str] = typer.Option(
-        None, "--theme", "-t", help="Theme to use for preview"
+        None, "--theme", help="Theme to use for preview"
     ),
-    port: int = typer.Option(8080, "--port", "-p", help="Port for preview server"),
+    port: int = typer.Option(8080, "--port", help="Port for preview server"),
 ) -> None:
     """Generate and preview site."""
     console.print("👁️  Generating site preview...", style="bold blue")
@@ -297,12 +295,8 @@ def preview(
 
 @app.command()
 def themes(
-    list_themes: bool = typer.Option(
-        False, "--list", "-l", help="List available themes"
-    ),
-    info: Optional[str] = typer.Option(
-        None, "--info", "-i", help="Show theme information"
-    ),
+    list_themes: bool = typer.Option(False, "--list", help="List available themes"),
+    info: Optional[str] = typer.Option(None, "--info", help="Show theme information"),
 ) -> None:
     """Manage themes."""
     try:

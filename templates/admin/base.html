@@ -55,6 +55,9 @@
         {% endblock %}
     </main>
 
+    <!-- Media Library Modal -->
+    <div id="media-library-modal"></div>
+
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed top-4 right-4 z-50"></div>
 
@@ -101,6 +104,17 @@
 
             return response.json();
         }
+    </script>
+
+    <script>
+        // Initialize media library modal
+        document.addEventListener('DOMContentLoaded', () => {
+            const modalContainer = document.getElementById('media-library-modal');
+            const template = document.getElementById('media-library-modal-template');
+            if (template && modalContainer) {
+                modalContainer.innerHTML = template.innerHTML;
+            }
+        });
     </script>
 
     {% block scripts %}

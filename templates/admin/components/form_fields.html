@@ -347,6 +347,174 @@
     </div>
 </template>
 
+<!-- Media Upload Field with Drag & Drop -->
+<template x-teleport="body" id="media-upload-field-template">
+    <div class="form-field" x-data="mediaUploadField($field, $value)">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span x-text="field.label"></span>
+            <span x-show="field.required" class="text-red-500">*</span>
+        </label>
+
+        <!-- Drag and drop area -->
+        <div
+            x-ref="dropzone"
+            @dragover.prevent="dragover = true"
+            @dragleave.prevent="dragover = false"
+            @drop.prevent="handleDrop"
+            :class="{'border-blue-500 bg-blue-50': dragover, 'border-red-500': hasError}"
+            class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+
+            <!-- Upload area content -->
+            <div x-show="!uploading && !value">
+                <div class="mx-auto w-12 h-12 text-gray-400 mb-4">
+                    <i class="fas fa-cloud-upload-alt text-4xl"></i>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">
+                    <span class="font-medium">Click to upload</span> or drag and drop
+                </p>
+                <p class="text-xs text-gray-500">
+                    PNG, JPG, GIF, WebP up to 10MB
+                </p>
+            </div>
+
+            <!-- Upload progress -->
+            <div x-show="uploading" class="flex items-center justify-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                <span class="text-sm text-gray-600">Uploading...</span>
+            </div>
+
+            <!-- Uploaded file preview -->
+            <div x-show="!uploading && value" class="space-y-4">
+                <div x-show="value && value.url" class="relative inline-block">
+                    <img :src="value.url" :alt="value.filename"
+                         class="max-w-full max-h-48 rounded shadow-sm">
+                    <button type="button" @click="removeFile"
+                            class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <p class="font-medium" x-text="value.original_filename"></p>
+                    <p class="text-xs text-gray-500" x-text="formatFileSize(value.file_size)"></p>
+                </div>
+            </div>
+
+            <!-- Hidden file input -->
+            <input type="file"
+                   x-ref="fileInput"
+                   @change="handleFileSelect"
+                   :accept="getAcceptedTypes()"
+                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+        </div>
+
+        <!-- Media library button -->
+        <div class="mt-2 flex justify-between items-center">
+            <button type="button" @click="openMediaLibrary"
+                    class="text-sm text-blue-600 hover:text-blue-800">
+                <i class="fas fa-images mr-1"></i>Choose from library
+            </button>
+            <div x-show="multiple" class="text-xs text-gray-500">
+                <span x-text="Array.isArray(value) ? value.length : (value ? 1 : 0)"></span>
+                file<span x-show="Array.isArray(value) ? value.length !== 1 : false">s</span> selected
+            </div>
+        </div>
+
+        <div x-show="field.description" class="mt-1 text-sm text-gray-500">
+            <span x-text="field.description"></span>
+        </div>
+
+        <div x-show="errorMessage" class="mt-1 text-sm text-red-600">
+            <span x-text="errorMessage"></span>
+        </div>
+    </div>
+</template>
+
+<!-- Media Library Modal -->
+<template x-teleport="body" id="media-library-modal-template">
+    <div x-data="mediaLibraryModal()" x-show="$store.mediaLibrary.isOpen"
+         x-cloak @keydown.escape.window="$store.mediaLibrary.close()"
+         class="fixed inset-0 z-50 overflow-y-auto">
+
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50" @click="$store.mediaLibrary.close()"></div>
+
+        <!-- Modal -->
+        <div class="flex min-h-screen items-center justify-center p-4">
+            <div class="relative bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[80vh] overflow-hidden"
+                 @click.stop>
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-6 border-b">
+                    <h2 class="text-lg font-semibold text-gray-900">Media Library</h2>
+                    <button @click="$store.mediaLibrary.close()"
+                            class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6 overflow-y-auto max-h-[60vh]">
+                    <!-- Loading state -->
+                    <div x-show="loading" class="text-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p class="text-gray-600">Loading media files...</p>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div x-show="!loading && mediaFiles.length === 0" class="text-center py-8">
+                        <div class="text-gray-400 text-4xl mb-4">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <p class="text-gray-600">No media files found</p>
+                        <p class="text-sm text-gray-500 mt-1">Upload some images to get started</p>
+                    </div>
+
+                    <!-- Media grid -->
+                    <div x-show="!loading && mediaFiles.length > 0"
+                         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        <template x-for="media in mediaFiles" :key="media.filename">
+                            <div class="relative group cursor-pointer border-2 border-transparent hover:border-blue-500 rounded-lg overflow-hidden"
+                                 :class="{'border-blue-500 bg-blue-50': selectedMedia && selectedMedia.filename === media.filename}"
+                                 @click="selectMedia(media)">
+                                <img :src="media.url" :alt="media.original_filename"
+                                     class="w-full h-24 object-cover">
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity"></div>
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
+                                    <p class="text-xs text-white truncate" x-text="media.original_filename"></p>
+                                </div>
+                                <!-- Selection indicator -->
+                                <div x-show="selectedMedia && selectedMedia.filename === media.filename"
+                                     class="absolute top-2 right-2 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-xs"></i>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex items-center justify-between p-6 border-t bg-gray-50">
+                    <div class="text-sm text-gray-600">
+                        <span x-show="selectedMedia" x-text="`Selected: ${selectedMedia?.original_filename}`"></span>
+                        <span x-show="!selectedMedia">Select a file to continue</span>
+                    </div>
+                    <div class="space-x-3">
+                        <button @click="$store.mediaLibrary.close()"
+                                class="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button @click="confirmSelection"
+                                :disabled="!selectedMedia"
+                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Select
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
 <script>
 // Field component functions
 function textField(field, initialValue) {
@@ -720,4 +888,214 @@ function nestedArrayField(field, initialValue) {
         }
     };
 }
+
+// Media Upload Field Component
+function mediaUploadField(field, initialValue) {
+    return {
+        field: field,
+        value: initialValue || null,
+        errorMessage: '',
+        hasError: false,
+        uploading: false,
+        dragover: false,
+        multiple: field.multiple || false,
+
+        async handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            if (files.length > 0) {
+                await this.uploadFiles(files);
+            }
+        },
+
+        async handleDrop(event) {
+            this.dragover = false;
+            const files = Array.from(event.dataTransfer.files);
+            if (files.length > 0) {
+                await this.uploadFiles(files);
+            }
+        },
+
+        async uploadFiles(files) {
+            if (this.uploading) return;
+
+            this.uploading = true;
+            this.clearError();
+
+            try {
+                // Create FormData for upload
+                const formData = new FormData();
+
+                if (this.multiple) {
+                    // Multiple file upload
+                    files.forEach(file => {
+                        if (this.validateFile(file)) {
+                            formData.append('files', file);
+                        }
+                    });
+
+                    const response = await fetch('/api/media-api/upload-multiple', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success && result.data.uploaded.length > 0) {
+                        this.value = result.data.uploaded;
+                        this.$dispatch('field-updated', { name: this.field.name, value: this.value });
+                    } else {
+                        throw new Error(result.message || 'Upload failed');
+                    }
+                } else {
+                    // Single file upload
+                    const file = files[0];
+                    if (!this.validateFile(file)) {
+                        return;
+                    }
+
+                    formData.append('file', file);
+
+                    const response = await fetch('/api/media-api/upload', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.value = result.data;
+                        this.$dispatch('field-updated', { name: this.field.name, value: this.value });
+                    } else {
+                        throw new Error(result.message || 'Upload failed');
+                    }
+                }
+            } catch (error) {
+                this.errorMessage = error.message || 'Upload failed';
+                this.hasError = true;
+            } finally {
+                this.uploading = false;
+            }
+        },
+
+        validateFile(file) {
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
+            if (!allowedTypes.includes(file.type)) {
+                this.errorMessage = 'Invalid file type. Please upload an image file.';
+                this.hasError = true;
+                return false;
+            }
+
+            if (file.size > maxSize) {
+                this.errorMessage = 'File too large. Maximum size is 10MB.';
+                this.hasError = true;
+                return false;
+            }
+
+            return true;
+        },
+
+        removeFile() {
+            this.value = null;
+            this.$refs.fileInput.value = '';
+            this.$dispatch('field-updated', { name: this.field.name, value: null });
+        },
+
+        openMediaLibrary() {
+            this.$store.mediaLibrary.open((selectedMedia) => {
+                this.value = selectedMedia;
+                this.$dispatch('field-updated', { name: this.field.name, value: selectedMedia });
+            });
+        },
+
+        getAcceptedTypes() {
+            return 'image/jpeg,image/jpg,image/png,image/gif,image/webp';
+        },
+
+        formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        },
+
+        clearError() {
+            this.hasError = false;
+            this.errorMessage = '';
+        }
+    };
+}
+
+// Media Library Modal Component
+function mediaLibraryModal() {
+    return {
+        loading: false,
+        mediaFiles: [],
+        selectedMedia: null,
+
+        init() {
+            // Load media files when modal opens
+            this.$watch('$store.mediaLibrary.isOpen', (isOpen) => {
+                if (isOpen) {
+                    this.loadMediaFiles();
+                }
+            });
+        },
+
+        async loadMediaFiles() {
+            this.loading = true;
+            try {
+                const response = await fetch('/api/media-api/list');
+                const result = await response.json();
+
+                if (result.success) {
+                    this.mediaFiles = result.data;
+                } else {
+                    console.error('Failed to load media files:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading media files:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        selectMedia(media) {
+            this.selectedMedia = media;
+        },
+
+        confirmSelection() {
+            if (this.selectedMedia && this.$store.mediaLibrary.callback) {
+                this.$store.mediaLibrary.callback(this.selectedMedia);
+            }
+            this.$store.mediaLibrary.close();
+        }
+    };
+}
+
+// Alpine.js store for media library
+document.addEventListener('alpine:init', () => {
+    Alpine.store('mediaLibrary', {
+        isOpen: false,
+        callback: null,
+
+        open(callback) {
+            this.callback = callback;
+            this.isOpen = true;
+        },
+
+        close() {
+            this.isOpen = false;
+            this.callback = null;
+        }
+    });
+});
 </script>

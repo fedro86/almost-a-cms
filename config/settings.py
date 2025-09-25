@@ -90,6 +90,16 @@ class Settings(BaseSettings):
         super().__init__(**kwargs)
         self._ensure_directories()
 
+    @property
+    def media_dir(self) -> Path:
+        """Get media directory path."""
+        return self.media_directory
+
+    @property
+    def content_dir(self) -> Path:
+        """Get content directory path."""
+        return self.content_directory
+
     def _ensure_directories(self) -> None:
         """Ensure all required directories exist."""
         directories = [
@@ -107,3 +117,8 @@ class Settings(BaseSettings):
 
 # Global settings instance
 settings = Settings()
+
+
+def get_settings() -> Settings:
+    """Get the global settings instance."""
+    return settings

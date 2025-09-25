@@ -53,6 +53,40 @@
                 <span x-text="`${Math.round(getCompletionPercentage())}%`" class="font-medium"></span>
             </div>
         </div>
+
+        <!-- Auto-save status and settings -->
+        <div class="mt-4 flex items-center justify-between text-sm">
+            <div class="flex items-center space-x-4">
+                <!-- Save status -->
+                <div class="flex items-center" :class="getSaveStatusClass()">
+                    <i class="fas mr-2"
+                       :class="{
+                           'fa-check-circle': saveStatus === 'saved',
+                           'fa-spinner fa-spin': saveStatus === 'saving',
+                           'fa-exclamation-circle': saveStatus === 'error',
+                           'fa-edit': saveStatus === 'draft',
+                           'fa-circle': saveStatus === 'ready'
+                       }"></i>
+                    <span x-text="getSaveStatusText()"></span>
+                </div>
+
+                <!-- Keyboard shortcuts info -->
+                <div class="text-gray-500 hidden md:block">
+                    <span class="text-xs">Ctrl+S to save • Ctrl+K to toggle mode</span>
+                </div>
+            </div>
+
+            <!-- Auto-save toggle -->
+            <div class="flex items-center">
+                <label class="flex items-center text-gray-600 cursor-pointer">
+                    <input type="checkbox"
+                           x-model="autoSaveEnabled"
+                           @change="toggleAutoSave()"
+                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
+                    <span class="text-sm">Auto-save</span>
+                </label>
+            </div>
+        </div>
     </div>
 
     <!-- Content Form -->
@@ -183,11 +217,19 @@ function contentEditor(contentType) {
         validationErrors: [],
         lastSaveSuccess: false,
         viewMode: 'form', // 'form' or 'json'
+        // Auto-save features
+        autoSaveEnabled: true,
+        autoSaveInterval: null,
+        lastSaved: null,
+        hasUnsavedChanges: false,
+        saveStatus: 'saved', // 'saved', 'saving', 'error', 'draft'
 
         async init() {
             await this.loadContent();
             await this.loadSchema();
             await this.loadFormSchema();
+            this.initializeAutoSave();
+            this.initializeKeyboardShortcuts();
         },
 
         async loadContent() {
@@ -272,7 +314,7 @@ function contentEditor(contentType) {
         },
 
         isSimpleField(widgetType) {
-            return ['input', 'textarea', 'number', 'checkbox', 'date', 'email', 'url', 'password', 'file'].includes(widgetType);
+            return ['input', 'textarea', 'number', 'checkbox', 'date', 'email', 'url', 'password', 'file', 'media_upload'].includes(widgetType);
         },
 
         renderSimpleField(field, fieldValue) {
@@ -299,6 +341,9 @@ function contentEditor(contentType) {
                         @change="handleFieldUpdate({name: '${field.name}', value: $event.target.checked})">
                     <label for="${fieldId}" class="ml-2 block text-sm text-gray-900">${field.label}</label>
                 </div>`;
+            } else if (field.widget_type === 'media_upload') {
+                // Render media upload component directly
+                return this.renderMediaUploadField(field, fieldValue);
             } else {
                 const inputType = field.widget_type === 'email' ? 'email' :
                                  field.widget_type === 'url' ? 'url' :
@@ -379,6 +424,82 @@ function contentEditor(contentType) {
                         class="mt-2 px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded">
                         Switch to JSON Editor
                     </button>
+                </div>
+            </div>`;
+        },
+
+        renderMediaUploadField(field, fieldValue) {
+            const fieldId = `field_${field.name}`;
+            const dragoverClass = "{'border-blue-500 bg-blue-50': dragover, 'border-red-500': hasError}";
+
+            return `<div class="form-field" x-data="mediaUploadField(field, ${JSON.stringify(fieldValue)})" @field-updated="handleFieldUpdate($event.detail)">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    ${field.label}${field.required ? '<span class="text-red-500">*</span>' : ''}
+                </label>
+
+                <!-- Drag and drop area -->
+                <div x-ref="dropzone"
+                     @dragover.prevent="dragover = true"
+                     @dragleave.prevent="dragover = false"
+                     @drop.prevent="handleDrop"
+                     :class="${dragoverClass}"
+                     class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+
+                    <!-- Upload area content -->
+                    <div x-show="!uploading && !value">
+                        <div class="mx-auto w-12 h-12 text-gray-400 mb-4">
+                            <i class="fas fa-cloud-upload-alt text-4xl"></i>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">
+                            <span class="font-medium">Click to upload</span> or drag and drop
+                        </p>
+                        <p class="text-xs text-gray-500">
+                            PNG, JPG, GIF, WebP up to 10MB
+                        </p>
+                    </div>
+
+                    <!-- Upload progress -->
+                    <div x-show="uploading" class="flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                        <span class="text-sm text-gray-600">Uploading...</span>
+                    </div>
+
+                    <!-- Uploaded file preview -->
+                    <div x-show="!uploading && value" class="space-y-4">
+                        <div x-show="value && value.url" class="relative inline-block">
+                            <img :src="value.url" :alt="value.filename"
+                                 class="max-w-full max-h-48 rounded shadow-sm">
+                            <button type="button" @click="removeFile"
+                                    class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <p class="font-medium" x-text="value.original_filename"></p>
+                            <p class="text-xs text-gray-500" x-text="formatFileSize(value.file_size)"></p>
+                        </div>
+                    </div>
+
+                    <!-- Hidden file input -->
+                    <input type="file"
+                           x-ref="fileInput"
+                           @change="handleFileSelect"
+                           :accept="getAcceptedTypes()"
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                </div>
+
+                <!-- Media library button -->
+                <div class="mt-2 flex justify-between items-center">
+                    <button type="button" @click="openMediaLibrary"
+                            class="text-sm text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-images mr-1"></i>Choose from library
+                    </button>
+                </div>
+
+                ${field.description ? `<div class="mt-1 text-sm text-gray-500">${field.description}</div>` : ''}
+
+                <div x-show="errorMessage" class="mt-1 text-sm text-red-600">
+                    <span x-text="errorMessage"></span>
                 </div>
             </div>`;
         },
@@ -530,6 +651,109 @@ function contentEditor(contentType) {
                 return JSON.stringify(currentData) !== JSON.stringify(this.originalContent);
             } catch {
                 return true; // If JSON is invalid, consider it changed
+            }
+        },
+
+        // Auto-save functionality
+        initializeAutoSave() {
+            // Start auto-save timer
+            this.autoSaveInterval = setInterval(async () => {
+                if (this.autoSaveEnabled && this.hasUnsavedChanges() && !this.saving) {
+                    await this.autoSave();
+                }
+            }, 30000); // Auto-save every 30 seconds
+
+            // Watch for content changes
+            this.$watch('formData', () => {
+                this.hasUnsavedChanges = true;
+                this.saveStatus = 'draft';
+            }, { deep: true });
+
+            this.$watch('contentJson', () => {
+                this.hasUnsavedChanges = true;
+                this.saveStatus = 'draft';
+            });
+        },
+
+        async autoSave() {
+            if (this.saving) return;
+
+            this.saveStatus = 'saving';
+            try {
+                const contentData = this.viewMode === 'json' ?
+                    JSON.parse(this.contentJson) : this.formData;
+
+                const response = await apiRequest(`/api/content/${this.contentType}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(contentData)
+                });
+
+                if (response.success) {
+                    this.saveStatus = 'saved';
+                    this.lastSaved = new Date();
+                    this.hasUnsavedChanges = false;
+                    // Don't show toast for auto-save, just update status
+                }
+            } catch (error) {
+                this.saveStatus = 'error';
+                console.warn('Auto-save failed:', error.message);
+            }
+        },
+
+        toggleAutoSave() {
+            this.autoSaveEnabled = !this.autoSaveEnabled;
+            if (this.autoSaveEnabled) {
+                showToast('Auto-save enabled', 'success');
+            } else {
+                showToast('Auto-save disabled', 'info');
+            }
+        },
+
+        // Keyboard shortcuts
+        initializeKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + S to save
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    this.saveContent();
+                }
+
+                // Ctrl/Cmd + K to toggle between form and JSON mode
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    this.viewMode = this.viewMode === 'form' ? 'json' : 'form';
+                    showToast(`Switched to ${this.viewMode} mode`, 'info');
+                }
+
+                // Escape to cancel current operation or close modals
+                if (e.key === 'Escape') {
+                    // Let other components handle escape first
+                    setTimeout(() => {
+                        if (this.saving) {
+                            // Could implement save cancellation here
+                        }
+                    }, 100);
+                }
+            });
+        },
+
+        getSaveStatusText() {
+            switch(this.saveStatus) {
+                case 'saving': return 'Saving...';
+                case 'saved': return this.lastSaved ? `Saved at ${this.lastSaved.toLocaleTimeString()}` : 'Saved';
+                case 'error': return 'Save failed';
+                case 'draft': return 'Unsaved changes';
+                default: return 'Ready';
+            }
+        },
+
+        getSaveStatusClass() {
+            switch(this.saveStatus) {
+                case 'saving': return 'text-blue-600';
+                case 'saved': return 'text-green-600';
+                case 'error': return 'text-red-600';
+                case 'draft': return 'text-yellow-600';
+                default: return 'text-gray-600';
             }
         }
     };
