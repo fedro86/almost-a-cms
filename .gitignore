@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 
 index_old.html
+
+# Planning documentation (not for version control)
+plan/
+logs/

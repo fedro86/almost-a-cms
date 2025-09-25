@@ -1,0 +1,723 @@
+<!-- Form Field Components Library -->
+<!-- Reusable Alpine.js components for different field types -->
+
+<!-- Basic Text Input Field -->
+<template x-teleport="body" id="text-field-template">
+    <div class="form-field" x-data="textField($field, $value)">
+        <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">
+            <span x-text="field.label"></span>
+            <span x-show="field.required" class="text-red-500">*</span>
+        </label>
+        <input
+            :type="field.widget_type === 'email' ? 'email' : field.widget_type === 'url' ? 'url' : field.widget_type === 'password' ? 'password' : 'text'"
+            :id="field.name"
+            :name="field.name"
+            x-model="value"
+            :placeholder="field.placeholder"
+            :required="field.required"
+            :minlength="field.min_length"
+            :maxlength="field.max_length"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            :class="{'border-red-500': hasError}"
+            @blur="validateField"
+            @input="clearError">
+
+        <div x-show="field.description" class="mt-1 text-sm text-gray-500">
+            <span x-text="field.description"></span>
+        </div>
+
+        <div x-show="errorMessage" class="mt-1 text-sm text-red-600">
+            <span x-text="errorMessage"></span>
+        </div>
+
+        <div x-show="field.max_length" class="mt-1 text-xs text-gray-400 text-right">
+            <span x-text="(value || '').length"></span>/<span x-text="field.max_length"></span>
+        </div>
+    </div>
+</template>
+
+<!-- Textarea Field -->
+<template x-teleport="body" id="textarea-field-template">
+    <div class="form-field" x-data="textareaField($field, $value)">
+        <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">
+            <span x-text="field.label"></span>
+            <span x-show="field.required" class="text-red-500">*</span>
+        </label>
+        <textarea
+            :id="field.name"
+            :name="field.name"
+            x-model="value"
+            :placeholder="field.placeholder"
+            :required="field.required"
+            :minlength="field.min_length"
+            :maxlength="field.max_length"
+            rows="4"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            :class="{'border-red-500': hasError, 'h-32': field.name.includes('bio') || field.name.includes('description')}"
+            @blur="validateField"
+            @input="clearError"></textarea>
+
+        <div x-show="field.description" class="mt-1 text-sm text-gray-500">
+            <span x-text="field.description"></span>
+        </div>
+
+        <div x-show="errorMessage" class="mt-1 text-sm text-red-600">
+            <span x-text="errorMessage"></span>
+        </div>
+
+        <div x-show="field.max_length" class="mt-1 text-xs text-gray-400 text-right">
+            <span x-text="(value || '').length"></span>/<span x-text="field.max_length"></span>
+        </div>
+    </div>
+</template>
+
+<!-- Number Field -->
+<template x-teleport="body" id="number-field-template">
+    <div class="form-field" x-data="numberField($field, $value)">
+        <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">
+            <span x-text="field.label"></span>
+            <span x-show="field.required" class="text-red-500">*</span>
+        </label>
+        <input
+            type="number"
+            :id="field.name"
+            :name="field.name"
+            x-model.number="value"
+            :placeholder="field.placeholder"
+            :required="field.required"
+            :min="field.min_value"
+            :max="field.max_value"
+            :step="field.field_type === 'number' ? 'any' : '1'"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            :class="{'border-red-500': hasError}"
+            @blur="validateField"
+            @input="clearError">
+
+        <div x-show="field.description" class="mt-1 text-sm text-gray-500">
+            <span x-text="field.description"></span>
+        </div>
+
+        <div x-show="errorMessage" class="mt-1 text-sm text-red-600">
+            <span x-text="errorMessage"></span>
+        </div>
+
+        <div x-show="field.min_value !== null || field.max_value !== null" class="mt-1 text-xs text-gray-400">
+            Range: <span x-text="field.min_value || 'no min'"></span> - <span x-text="field.max_value || 'no max'"></span>
+        </div>
+    </div>
+</template>
+
+<!-- Checkbox Field -->
+<template x-teleport="body" id="checkbox-field-template">
+    <div class="form-field" x-data="checkboxField($field, $value)">
+        <div class="flex items-center">
+            <input
+                type="checkbox"
+                :id="field.name"
+                :name="field.name"
+                x-model="value"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <label :for="field.name" class="ml-2 block text-sm text-gray-900">
+                <span x-text="field.label"></span>
+                <span x-show="field.required" class="text-red-500">*</span>
+            </label>
+        </div>
+
+        <div x-show="field.description" class="mt-1 text-sm text-gray-500 ml-6">
+            <span x-text="field.description"></span>
+        </div>
+    </div>
+</template>
+
+<!-- Date Field -->
+<template x-teleport="body" id="date-field-template">
+    <div class="form-field" x-data="dateField($field, $value)">
+        <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">
+            <span x-text="field.label"></span>
+            <span x-show="field.required" class="text-red-500">*</span>
+        </label>
+        <input
+            type="date"
+            :id="field.name"
+            :name="field.name"
+            x-model="value"
+            :required="field.required"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            :class="{'border-red-500': hasError}"
+            @blur="validateField"
+            @change="clearError">
+
+        <div x-show="field.description" class="mt-1 text-sm text-gray-500">
+            <span x-text="field.description"></span>
+        </div>
+
+        <div x-show="errorMessage" class="mt-1 text-sm text-red-600">
+            <span x-text="errorMessage"></span>
+        </div>
+    </div>
+</template>
+
+<!-- File Field (Basic) -->
+<template x-teleport="body" id="file-field-template">
+    <div class="form-field" x-data="fileField($field, $value)">
+        <label :for="field.name" class="block text-sm font-medium text-gray-700 mb-1">
+            <span x-text="field.label"></span>
+            <span x-show="field.required" class="text-red-500">*</span>
+        </label>
+
+        <!-- Current file display -->
+        <div x-show="value && (value.path || value.url)" class="mb-2 p-2 bg-gray-50 rounded border">
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-700" x-text="value.filename || value.path || 'File selected'"></span>
+                <button type="button" @click="clearFile" class="text-red-600 hover:text-red-800 text-sm">Remove</button>
+            </div>
+        </div>
+
+        <!-- File input -->
+        <input
+            type="file"
+            :id="field.name"
+            :name="field.name"
+            :required="field.required && !value"
+            :accept="getAcceptedFileTypes()"
+            @change="handleFileSelect"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            :class="{'border-red-500': hasError}">
+
+        <div x-show="field.description" class="mt-1 text-sm text-gray-500">
+            <span x-text="field.description"></span>
+        </div>
+
+        <div x-show="errorMessage" class="mt-1 text-sm text-red-600">
+            <span x-text="errorMessage"></span>
+        </div>
+
+        <div class="mt-1 text-xs text-gray-400">
+            <span x-show="field.name.includes('image') || field.name.includes('avatar')">Accepted: JPG, PNG, GIF, WebP</span>
+            <span x-show="!field.name.includes('image') && !field.name.includes('avatar')">Accepted: PDF, DOC, DOCX and common file types</span>
+        </div>
+    </div>
+</template>
+
+<!-- Array Field (Simple strings) -->
+<template x-teleport="body" id="array-field-template">
+    <div class="form-field" x-data="arrayField($field, $value)">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span x-text="field.label"></span>
+            <span x-show="field.required" class="text-red-500">*</span>
+        </label>
+
+        <div class="space-y-2">
+            <template x-for="(item, index) in items" :key="index">
+                <div class="flex items-center gap-2">
+                    <input
+                        type="text"
+                        x-model="item.value"
+                        :placeholder="`${field.label} ${index + 1}`"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        @blur="updateValue">
+                    <button
+                        type="button"
+                        @click="removeItem(index)"
+                        class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </template>
+        </div>
+
+        <button
+            type="button"
+            @click="addItem"
+            class="mt-2 px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border">
+            <i class="fas fa-plus mr-1"></i> Add <span x-text="field.label.slice(0, -1)"></span>
+        </button>
+
+        <div x-show="field.description" class="mt-1 text-sm text-gray-500">
+            <span x-text="field.description"></span>
+        </div>
+
+        <div x-show="errorMessage" class="mt-1 text-sm text-red-600">
+            <span x-text="errorMessage"></span>
+        </div>
+    </div>
+</template>
+
+<!-- Nested Object Field -->
+<template x-teleport="body" id="nested-object-field-template">
+    <div class="form-field" x-data="nestedObjectField($field, $value)">
+        <div class="border rounded-lg p-4 bg-gray-50">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <span x-text="field.label"></span>
+                <span x-show="field.required" class="text-red-500">*</span>
+            </h3>
+
+            <div class="space-y-4">
+                <template x-for="nestedField in field.nested_schema.fields" :key="nestedField.name">
+                    <div x-data="{ fieldValue: getNestedValue(nestedField.name) }">
+                        <!-- Render appropriate field type -->
+                        <div x-show="nestedField.widget_type === 'input' || nestedField.widget_type === 'email' || nestedField.widget_type === 'url' || nestedField.widget_type === 'password'"
+                             x-html="renderTextField(nestedField, fieldValue)"></div>
+                        <div x-show="nestedField.widget_type === 'textarea'"
+                             x-html="renderTextareaField(nestedField, fieldValue)"></div>
+                        <div x-show="nestedField.widget_type === 'number'"
+                             x-html="renderNumberField(nestedField, fieldValue)"></div>
+                        <div x-show="nestedField.widget_type === 'checkbox'"
+                             x-html="renderCheckboxField(nestedField, fieldValue)"></div>
+                        <div x-show="nestedField.widget_type === 'date'"
+                             x-html="renderDateField(nestedField, fieldValue)"></div>
+                    </div>
+                </template>
+            </div>
+
+            <div x-show="field.description" class="mt-2 text-sm text-gray-500">
+                <span x-text="field.description"></span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Nested Array Field (Complex objects) -->
+<template x-teleport="body" id="nested-array-field-template">
+    <div class="form-field" x-data="nestedArrayField($field, $value)">
+        <div class="border rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <span x-text="field.label"></span>
+                    <span x-show="field.required" class="text-red-500">*</span>
+                </h3>
+                <span class="text-sm text-gray-500" x-text="`${items.length} items`"></span>
+            </div>
+
+            <!-- Array items -->
+            <div class="space-y-4">
+                <template x-for="(item, itemIndex) in items" :key="itemIndex">
+                    <div class="border border-gray-200 rounded-lg p-4 bg-white relative">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-medium text-gray-700" x-text="`${field.label.slice(0, -1)} ${itemIndex + 1}`"></h4>
+                            <div class="flex space-x-2">
+                                <button type="button" @click="moveItemUp(itemIndex)"
+                                        :disabled="itemIndex === 0"
+                                        class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                                <button type="button" @click="moveItemDown(itemIndex)"
+                                        :disabled="itemIndex === items.length - 1"
+                                        class="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <button type="button" @click="removeItem(itemIndex)"
+                                        class="p-1 text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <template x-for="nestedField in field.array_item_schema.fields" :key="nestedField.name">
+                                <div x-data="{ fieldValue: getArrayItemValue(itemIndex, nestedField.name) }">
+                                    <!-- Render appropriate field type for array items -->
+                                    <div x-show="nestedField.widget_type === 'input' || nestedField.widget_type === 'email' || nestedField.widget_type === 'url' || nestedField.widget_type === 'password'"
+                                         x-html="renderArrayTextField(nestedField, fieldValue, itemIndex)"></div>
+                                    <div x-show="nestedField.widget_type === 'textarea'"
+                                         x-html="renderArrayTextareaField(nestedField, fieldValue, itemIndex)"></div>
+                                    <div x-show="nestedField.widget_type === 'number'"
+                                         x-html="renderArrayNumberField(nestedField, fieldValue, itemIndex)"></div>
+                                    <div x-show="nestedField.widget_type === 'checkbox'"
+                                         x-html="renderArrayCheckboxField(nestedField, fieldValue, itemIndex)"></div>
+                                    <div x-show="nestedField.widget_type === 'date'"
+                                         x-html="renderArrayDateField(nestedField, fieldValue, itemIndex)"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Add new item button -->
+            <button type="button" @click="addItem"
+                    class="mt-4 w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-800">
+                <i class="fas fa-plus mr-2"></i> Add <span x-text="field.label.slice(0, -1)"></span>
+            </button>
+
+            <div x-show="field.description" class="mt-2 text-sm text-gray-500">
+                <span x-text="field.description"></span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+// Field component functions
+function textField(field, initialValue) {
+    return {
+        field: field,
+        value: initialValue || field.default || '',
+        errorMessage: '',
+        hasError: false,
+
+        validateField() {
+            this.errorMessage = '';
+            this.hasError = false;
+
+            if (this.field.required && !this.value) {
+                this.errorMessage = `${this.field.label} is required`;
+                this.hasError = true;
+                return false;
+            }
+
+            if (this.field.min_length && this.value.length < this.field.min_length) {
+                this.errorMessage = `Minimum length is ${this.field.min_length} characters`;
+                this.hasError = true;
+                return false;
+            }
+
+            if (this.field.max_length && this.value.length > this.field.max_length) {
+                this.errorMessage = `Maximum length is ${this.field.max_length} characters`;
+                this.hasError = true;
+                return false;
+            }
+
+            if (this.field.widget_type === 'email' && this.value && !this.isValidEmail(this.value)) {
+                this.errorMessage = 'Please enter a valid email address';
+                this.hasError = true;
+                return false;
+            }
+
+            if (this.field.widget_type === 'url' && this.value && !this.isValidUrl(this.value)) {
+                this.errorMessage = 'Please enter a valid URL';
+                this.hasError = true;
+                return false;
+            }
+
+            return true;
+        },
+
+        clearError() {
+            this.hasError = false;
+            this.errorMessage = '';
+        },
+
+        isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        },
+
+        isValidUrl(url) {
+            try {
+                new URL(url);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+    };
+}
+
+function textareaField(field, initialValue) {
+    return textField(field, initialValue);
+}
+
+function numberField(field, initialValue) {
+    return {
+        field: field,
+        value: initialValue || field.default || (field.field_type === 'integer' ? 0 : 0.0),
+        errorMessage: '',
+        hasError: false,
+
+        validateField() {
+            this.errorMessage = '';
+            this.hasError = false;
+
+            if (this.field.required && (this.value === null || this.value === undefined || this.value === '')) {
+                this.errorMessage = `${this.field.label} is required`;
+                this.hasError = true;
+                return false;
+            }
+
+            if (this.value !== null && this.value !== undefined && this.value !== '') {
+                const num = parseFloat(this.value);
+
+                if (isNaN(num)) {
+                    this.errorMessage = 'Please enter a valid number';
+                    this.hasError = true;
+                    return false;
+                }
+
+                if (this.field.min_value !== null && num < this.field.min_value) {
+                    this.errorMessage = `Minimum value is ${this.field.min_value}`;
+                    this.hasError = true;
+                    return false;
+                }
+
+                if (this.field.max_value !== null && num > this.field.max_value) {
+                    this.errorMessage = `Maximum value is ${this.field.max_value}`;
+                    this.hasError = true;
+                    return false;
+                }
+            }
+
+            return true;
+        },
+
+        clearError() {
+            this.hasError = false;
+            this.errorMessage = '';
+        }
+    };
+}
+
+function checkboxField(field, initialValue) {
+    return {
+        field: field,
+        value: initialValue !== undefined ? initialValue : (field.default !== undefined ? field.default : false)
+    };
+}
+
+function dateField(field, initialValue) {
+    return {
+        field: field,
+        value: initialValue || field.default || '',
+        errorMessage: '',
+        hasError: false,
+
+        validateField() {
+            this.errorMessage = '';
+            this.hasError = false;
+
+            if (this.field.required && !this.value) {
+                this.errorMessage = `${this.field.label} is required`;
+                this.hasError = true;
+                return false;
+            }
+
+            return true;
+        },
+
+        clearError() {
+            this.hasError = false;
+            this.errorMessage = '';
+        }
+    };
+}
+
+function fileField(field, initialValue) {
+    return {
+        field: field,
+        value: initialValue || field.default || null,
+        errorMessage: '',
+        hasError: false,
+
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // For now, create a simple file object representation
+                this.value = {
+                    filename: file.name,
+                    size: file.size,
+                    type: file.type,
+                    path: null, // Will be set after upload
+                    url: null   // Will be set after processing
+                };
+                this.clearError();
+            }
+        },
+
+        clearFile() {
+            this.value = null;
+            // Clear the file input
+            const input = document.getElementById(this.field.name);
+            if (input) input.value = '';
+        },
+
+        getAcceptedFileTypes() {
+            if (this.field.name.includes('image') || this.field.name.includes('avatar')) {
+                return 'image/*';
+            }
+            return '.pdf,.doc,.docx,.txt,.rtf';
+        }
+    };
+}
+
+function arrayField(field, initialValue) {
+    return {
+        field: field,
+        items: [],
+        errorMessage: '',
+        hasError: false,
+
+        init() {
+            // Initialize items from the initial value
+            if (Array.isArray(initialValue)) {
+                this.items = initialValue.map(item => ({ value: item }));
+            } else {
+                this.items = [];
+            }
+
+            // Ensure at least one empty item if field is required
+            if (this.items.length === 0 && this.field.required) {
+                this.addItem();
+            }
+        },
+
+        addItem() {
+            this.items.push({ value: '' });
+        },
+
+        removeItem(index) {
+            this.items.splice(index, 1);
+            this.updateValue();
+        },
+
+        updateValue() {
+            // Update the parent value with current array items
+            const values = this.items.map(item => item.value).filter(value => value.trim() !== '');
+            this.$dispatch('field-updated', { name: this.field.name, value: values });
+        }
+    };
+}
+
+function nestedObjectField(field, initialValue) {
+    return {
+        field: field,
+        value: initialValue || field.default || {},
+
+        init() {
+            // Initialize with default values from schema
+            if (this.field.nested_schema && this.field.nested_schema.fields) {
+                this.field.nested_schema.fields.forEach(nestedField => {
+                    if (!(nestedField.name in this.value)) {
+                        this.value[nestedField.name] = nestedField.default || '';
+                    }
+                });
+            }
+        },
+
+        getNestedValue(fieldName) {
+            return this.value[fieldName] || '';
+        },
+
+        updateNestedValue(fieldName, newValue) {
+            this.value[fieldName] = newValue;
+            this.$dispatch('field-updated', { name: this.field.name, value: this.value });
+        },
+
+        // Simple field renderers for nested fields
+        renderTextField(nestedField, fieldValue) {
+            return `<input type="${nestedField.widget_type === 'email' ? 'email' : nestedField.widget_type === 'url' ? 'url' : 'text'}"
+                           value="${fieldValue || ''}"
+                           placeholder="${nestedField.placeholder || ''}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                           @input="updateNestedValue('${nestedField.name}', $event.target.value)">`;
+        }
+    };
+}
+
+function nestedArrayField(field, initialValue) {
+    return {
+        field: field,
+        items: [],
+
+        init() {
+            // Initialize items from the initial value
+            if (Array.isArray(initialValue)) {
+                this.items = initialValue.map(item => ({ ...item }));
+            } else {
+                this.items = [];
+            }
+        },
+
+        addItem() {
+            const newItem = {};
+            // Initialize with default values from array item schema
+            if (this.field.array_item_schema && this.field.array_item_schema.fields) {
+                this.field.array_item_schema.fields.forEach(nestedField => {
+                    newItem[nestedField.name] = nestedField.default || '';
+                });
+            }
+            this.items.push(newItem);
+            this.updateValue();
+        },
+
+        removeItem(index) {
+            this.items.splice(index, 1);
+            this.updateValue();
+        },
+
+        moveItemUp(index) {
+            if (index > 0) {
+                const item = this.items.splice(index, 1)[0];
+                this.items.splice(index - 1, 0, item);
+                this.updateValue();
+            }
+        },
+
+        moveItemDown(index) {
+            if (index < this.items.length - 1) {
+                const item = this.items.splice(index, 1)[0];
+                this.items.splice(index + 1, 0, item);
+                this.updateValue();
+            }
+        },
+
+        getArrayItemValue(itemIndex, fieldName) {
+            return this.items[itemIndex] ? this.items[itemIndex][fieldName] : '';
+        },
+
+        updateArrayItemValue(itemIndex, fieldName, newValue) {
+            if (this.items[itemIndex]) {
+                this.items[itemIndex][fieldName] = newValue;
+                this.updateValue();
+            }
+        },
+
+        updateValue() {
+            this.$dispatch('field-updated', { name: this.field.name, value: this.items });
+        },
+
+        // Simple field renderers for array item fields
+        renderArrayTextField(nestedField, fieldValue, itemIndex) {
+            return `<label class="block text-sm font-medium text-gray-700">${nestedField.label}</label>
+                    <input type="${nestedField.widget_type === 'email' ? 'email' : nestedField.widget_type === 'url' ? 'url' : 'text'}"
+                           value="${fieldValue || ''}"
+                           placeholder="${nestedField.placeholder || ''}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1"
+                           @input="updateArrayItemValue(${itemIndex}, '${nestedField.name}', $event.target.value)">`;
+        },
+
+        renderArrayTextareaField(nestedField, fieldValue, itemIndex) {
+            return `<label class="block text-sm font-medium text-gray-700">${nestedField.label}</label>
+                    <textarea rows="3"
+                              placeholder="${nestedField.placeholder || ''}"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1"
+                              @input="updateArrayItemValue(${itemIndex}, '${nestedField.name}', $event.target.value)">${fieldValue || ''}</textarea>`;
+        },
+
+        renderArrayNumberField(nestedField, fieldValue, itemIndex) {
+            return `<label class="block text-sm font-medium text-gray-700">${nestedField.label}</label>
+                    <input type="number"
+                           value="${fieldValue || ''}"
+                           placeholder="${nestedField.placeholder || ''}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1"
+                           @input="updateArrayItemValue(${itemIndex}, '${nestedField.name}', parseFloat($event.target.value))">`;
+        },
+
+        renderArrayCheckboxField(nestedField, fieldValue, itemIndex) {
+            return `<div class="flex items-center mt-2">
+                        <input type="checkbox"
+                               ${fieldValue ? 'checked' : ''}
+                               class="h-4 w-4 text-blue-600 rounded"
+                               @change="updateArrayItemValue(${itemIndex}, '${nestedField.name}', $event.target.checked)">
+                        <label class="ml-2 text-sm text-gray-900">${nestedField.label}</label>
+                    </div>`;
+        },
+
+        renderArrayDateField(nestedField, fieldValue, itemIndex) {
+            return `<label class="block text-sm font-medium text-gray-700">${nestedField.label}</label>
+                    <input type="date"
+                           value="${fieldValue || ''}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md mt-1"
+                           @change="updateArrayItemValue(${itemIndex}, '${nestedField.name}', $event.target.value)">`;
+        }
+    };
+}
+</script>

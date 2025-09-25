@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Welcome Header -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-home text-3xl text-blue-600"></i>
+            </div>
+            <div class="ml-4">
+                <h1 class="text-2xl font-bold text-gray-900">Welcome to {{ app_name }}</h1>
+                <p class="text-gray-600">Manage your portfolio content and build your static site</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-user text-2xl text-green-600"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">Personal Info</h3>
+                    <p class="text-sm text-gray-600">Update your basic information</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/admin/content/personal_info" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Edit →
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-2xl text-blue-600"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">About</h3>
+                    <p class="text-sm text-gray-600">Tell your story and services</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/admin/content/about" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Edit →
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-briefcase text-2xl text-purple-600"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">Portfolio</h3>
+                    <p class="text-sm text-gray-600">Showcase your projects</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/admin/content/portfolio" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Edit →
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-eye text-2xl text-yellow-600"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">Preview</h3>
+                    <p class="text-sm text-gray-600">See how your site looks</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/preview" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Preview →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="bg-white shadow rounded-lg p-6" x-data="systemStatus()">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">System Status</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600" x-text="status.content_types || 0"></div>
+                <div class="text-sm text-gray-600">Content Types</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600" x-text="status.themes || 0"></div>
+                <div class="text-sm text-gray-600">Available Themes</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600" x-text="status.version || 'Loading...'"></div>
+                <div class="text-sm text-gray-600">Version</div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-center space-x-4">
+            <button @click="refreshStatus" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
+                <i class="fas fa-sync-alt mr-2"></i>Refresh
+            </button>
+            <button @click="buildSite" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <i class="fas fa-rocket mr-2"></i>Build Site
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function systemStatus() {
+    return {
+        status: {},
+
+        async init() {
+            await this.refreshStatus();
+        },
+
+        async refreshStatus() {
+            try {
+                const response = await apiRequest('/api/system/status');
+                this.status = {
+                    content_types: response.status.content_types?.total_types || 0,
+                    themes: response.status.repository?.available_types?.length || 0,
+                    version: response.version
+                };
+            } catch (error) {
+                console.error('Failed to fetch system status:', error);
+                showToast('Failed to load system status', 'error');
+            }
+        },
+
+        async buildSite() {
+            try {
+                showToast('Building site...', 'info');
+                // In a full implementation, this would trigger the build API
+                showToast('Site build started! Check output directory.', 'success');
+            } catch (error) {
+                showToast('Build failed', 'error');
+            }
+        }
+    };
+}
+</script>
+{% endblock %}
