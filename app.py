@@ -19,6 +19,49 @@ def save_json_file(filename, data):
 def index():
     return render_template('backend_index.html')
 
+# API routes for React app
+@app.route('/api/content/<filename>', methods=['GET'])
+def get_content(filename):
+    try:
+        data = load_json_file(filename)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/content/<filename>', methods=['POST'])
+def save_content(filename):
+    try:
+        data = request.json
+        save_json_file(filename, data)
+        generate_html()
+        return jsonify({
+            'status': 'success',
+            'message': 'File saved and index.html regenerated'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/generate', methods=['POST'])
+def generate_html_api():
+    try:
+        generate_html()
+        return jsonify({
+            'status': 'success',
+            'message': 'HTML generated successfully'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+# Legacy route for browser access
 @app.route('/edit/<filename>', methods=['GET', 'POST'])
 def edit(filename):
     if request.method == 'POST':
@@ -26,10 +69,10 @@ def edit(filename):
             # 1. Save JSON
             data = request.json
             save_json_file(filename, data)
-            
+
             # 2. Regenerate index.html
             generate_html()
-            
+
             return jsonify({
                 'status': 'success',
                 'message': 'File saved and index.html regenerated'
@@ -41,6 +84,7 @@ def edit(filename):
             }), 500
     else:
         data = load_json_file(filename)
+        # Return HTML for browser access
         return render_template('edit.html', filename=filename, data=json.dumps(data, indent=4))
 
 if __name__ == '__main__':
