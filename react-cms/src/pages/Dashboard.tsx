@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ContentCard } from '../components/ContentCard';
 import { ContentFile } from '../types';
 
@@ -111,10 +112,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ onEditContent }) => {
         </div>
       </div>
 
+      {/* Landing Page Editor - Special Card */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Landing Page
+        </h2>
+
+        <Link to="/admin/landing-page">
+          <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl p-8 text-white hover:shadow-2xl transition-all transform hover:scale-[1.02] cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-2.727 1.17 1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                  </svg>
+                  <h3 className="text-2xl font-bold">Edit Landing Page</h3>
+                  <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-xs font-semibold">
+                    NEW
+                  </span>
+                </div>
+                <p className="text-white text-opacity-90 mb-4">
+                  Edit the almostacms.com landing page - 8 sections including Hero, Features, How It Works, Showcase, Open Source, Support, FAQ, and Footer
+                </p>
+                <div className="flex items-center gap-2 text-white text-opacity-80 text-sm">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <span>8 editable sections</span>
+                </div>
+              </div>
+              <div className="text-white text-opacity-60">
+                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </div>
+
       {/* Content Files Grid */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Edit Content Sections
+          Personal Website Sections
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

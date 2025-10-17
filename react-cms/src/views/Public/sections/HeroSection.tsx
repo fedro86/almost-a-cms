@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { RocketLaunchIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 
+interface TrustBadge {
+  text: string;
+  color: string;
+}
+
+interface FloatingBadge {
+  emoji: string;
+  label: string;
+  text: string;
+}
+
 interface HeroData {
   headline: string;
   subheadline: string;
@@ -16,6 +27,11 @@ interface HeroData {
   };
   heroImage: string;
   backgroundStyle: string;
+  trustBadges: TrustBadge[];
+  floatingBadges: {
+    topRight: FloatingBadge;
+    bottomLeft: FloatingBadge;
+  };
 }
 
 export const HeroSection: React.FC = () => {
@@ -88,26 +104,27 @@ export const HeroSection: React.FC = () => {
               </a>
             </div>
 
-            {/* Social Proof */}
-            <div className="flex items-center gap-6 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Free forever</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>No credit card</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Open source</span>
-              </div>
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center gap-3">
+              {data.trustBadges?.map((badge, index) => {
+                const colorClasses = {
+                  green: 'bg-green-50 text-green-700',
+                  blue: 'bg-blue-50 text-blue-700',
+                  purple: 'bg-purple-50 text-purple-700',
+                  red: 'bg-red-50 text-red-700',
+                  yellow: 'bg-yellow-50 text-yellow-700',
+                };
+                const colorClass = colorClasses[badge.color as keyof typeof colorClasses] || 'bg-gray-50 text-gray-700';
+
+                return (
+                  <span key={index} className={`inline-flex items-center gap-1.5 px-3 py-1.5 ${colorClass} rounded-full text-sm font-medium`}>
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    {badge.text}
+                  </span>
+                );
+              })}
             </div>
           </div>
 
@@ -128,12 +145,28 @@ export const HeroSection: React.FC = () => {
             </div>
 
             {/* Floating badges */}
-            <div className="absolute -top-4 -right-4 bg-white rounded-lg shadow-lg px-4 py-2 border border-gray-200">
-              <div className="text-sm font-semibold text-gray-700">✨ Free & Open Source</div>
-            </div>
-            <div className="absolute -bottom-4 -left-4 bg-white rounded-lg shadow-lg px-4 py-2 border border-gray-200">
-              <div className="text-sm font-semibold text-gray-700">⚡ Deploy in 60 seconds</div>
-            </div>
+            {data.floatingBadges?.topRight && (
+              <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl px-4 py-3 border border-gray-100 transform rotate-2 hover:rotate-0 transition-transform">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{data.floatingBadges.topRight.emoji}</span>
+                  <div>
+                    <div className="text-xs text-gray-500 font-medium">{data.floatingBadges.topRight.label}</div>
+                    <div className="text-sm font-bold text-gray-900">{data.floatingBadges.topRight.text}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {data.floatingBadges?.bottomLeft && (
+              <div className="absolute bottom-6 left-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl shadow-xl px-4 py-3 transform -rotate-2 hover:rotate-0 transition-transform">
+                <div className="flex items-center gap-2 text-white">
+                  <span className="text-2xl">{data.floatingBadges.bottomLeft.emoji}</span>
+                  <div>
+                    <div className="text-xs text-blue-100 font-medium">{data.floatingBadges.bottomLeft.label}</div>
+                    <div className="text-sm font-bold">{data.floatingBadges.bottomLeft.text}</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

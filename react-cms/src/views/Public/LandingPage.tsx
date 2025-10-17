@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavBar } from './sections/NavBar';
 import { HeroSection } from './sections/HeroSection';
 import { FeaturesSection } from './sections/FeaturesSection';
 import { HowItWorksSection } from './sections/HowItWorksSection';
@@ -11,14 +12,17 @@ import { FooterSection } from './sections/FooterSection';
 export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
-      <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <ShowcaseSection />
-      <OpenSourceSection />
-      <SupportSection />
-      <FAQSection />
-      <FooterSection />
+      <NavBar />
+      <div className="pt-16"> {/* Add padding-top to account for fixed navbar */}
+        <HeroSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <ShowcaseSection />
+        <OpenSourceSection />
+        <SupportSection />
+        <FAQSection />
+        <FooterSection />
+      </div>
     </div>
   );
 };

@@ -5,6 +5,15 @@ import { AuthCallback } from './components/auth/AuthCallback';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardWrapper } from './pages/DashboardWrapper';
 import { FirstTimeSetup } from './components/setup/FirstTimeSetup';
+import { LandingPageEditor } from './views/Admin/LandingPageEditor';
+import { LandingHeroForm } from './views/Admin/forms/LandingHeroForm';
+import { LandingFeaturesForm } from './views/Admin/forms/LandingFeaturesForm';
+import { LandingHowItWorksForm } from './views/Admin/forms/LandingHowItWorksForm';
+import { LandingShowcaseForm } from './views/Admin/forms/LandingShowcaseForm';
+import { LandingOpenSourceForm } from './views/Admin/forms/LandingOpenSourceForm';
+import { LandingSupportForm } from './views/Admin/forms/LandingSupportForm';
+import { LandingFAQForm } from './views/Admin/forms/LandingFAQForm';
+import { LandingFooterForm } from './views/Admin/forms/LandingFooterForm';
 
 /**
  * Main Application Component
@@ -40,6 +49,88 @@ function App() {
             element={
               <ProtectedRoute>
                 <FirstTimeSetup />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin - Landing Page Editor */}
+          <Route
+            path="/admin/landing-page"
+            element={
+              <ProtectedRoute>
+                <LandingPageEditor />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/hero"
+            element={
+              <ProtectedRoute>
+                <LandingHeroForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/features"
+            element={
+              <ProtectedRoute>
+                <LandingFeaturesForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/how-it-works"
+            element={
+              <ProtectedRoute>
+                <LandingHowItWorksForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/showcase"
+            element={
+              <ProtectedRoute>
+                <LandingShowcaseForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/open-source"
+            element={
+              <ProtectedRoute>
+                <LandingOpenSourceForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/support"
+            element={
+              <ProtectedRoute>
+                <LandingSupportForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/faq"
+            element={
+              <ProtectedRoute>
+                <LandingFAQForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit/footer"
+            element={
+              <ProtectedRoute>
+                <LandingFooterForm />
               </ProtectedRoute>
             }
           />
