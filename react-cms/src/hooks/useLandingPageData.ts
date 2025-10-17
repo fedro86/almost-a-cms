@@ -11,13 +11,22 @@ export const useLandingPageData = () => {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Load content from public/data folder
+   * Load content from localStorage first, fallback to public/data folder
    */
   const loadContent = useCallback(async (filename: string): Promise<any | null> => {
     setLoading(true);
     setError(null);
 
     try {
+      // Check localStorage first for user edits
+      const localData = localStorage.getItem(`landing_${filename}`);
+      if (localData) {
+        const data = JSON.parse(localData);
+        console.log(`✅ Loaded landing page data from localStorage: ${filename}`, data);
+        return data;
+      }
+
+      // Fallback to public/data folder
       const response = await fetch(`/data/${filename}.json`);
 
       if (!response.ok) {
@@ -25,7 +34,7 @@ export const useLandingPageData = () => {
       }
 
       const data = await response.json();
-      console.log(`✅ Loaded landing page data: ${filename}`, data);
+      console.log(`✅ Loaded landing page data from public folder: ${filename}`, data);
 
       return data;
 

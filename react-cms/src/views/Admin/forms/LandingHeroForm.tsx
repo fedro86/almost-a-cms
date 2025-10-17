@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { PhotoIcon, FolderIcon } from '@heroicons/react/24/outline';
 import { useLandingPageData as useApi } from '../../../hooks/useLandingPageData';
+import GitHubApiService from '../../../services/github-api';
+import { useRepo } from '../../../hooks/useRepo';
 
 interface TrustBadge {
   text: string;
@@ -11,6 +14,12 @@ interface FloatingBadge {
   emoji: string;
   label: string;
   text: string;
+}
+
+interface RepoImage {
+  name: string;
+  path: string;
+  url: string;
 }
 
 interface HeroData {
@@ -45,6 +54,20 @@ export const LandingHeroForm: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showTopEmojiPicker, setShowTopEmojiPicker] = useState(false);
   const [showBottomEmojiPicker, setShowBottomEmojiPicker] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Image browser state
+  const [showImageBrowser, setShowImageBrowser] = useState(false);
+  const [availableImages, setAvailableImages] = useState<RepoImage[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  const { activeRepo } = useRepo();
+
+  // Gradient colors state
+  const [gradientFrom, setGradientFrom] = useState('#3b82f6'); // blue-500
+  const [gradientTo, setGradientTo] = useState('#a855f7'); // purple-500
+  const [gradientDirection, setGradientDirection] = useState('to-br');
 
   useEffect(() => {
     // Load hero data
@@ -54,6 +77,120 @@ export const LandingHeroForm: React.FC = () => {
       }
     });
   }, []);
+
+  // Load available images from repository
+  useEffect(() => {
+    loadAvailableImages();
+  }, [activeRepo]);
+
+  const loadAvailableImages = async () => {
+    if (!activeRepo) return;
+
+    setLoadingImages(true);
+    try {
+      const result = await GitHubApiService.listDirectoryContents(
+        activeRepo.owner,
+        activeRepo.name,
+        'assets/images'
+      );
+
+      if (result.success && result.data) {
+        // Filter to only image files
+        const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+        const images = result.data
+          .filter((item: any) => {
+            const ext = item.name.split('.').pop()?.toLowerCase();
+            return item.type === 'file' && ext && imageExtensions.includes(ext);
+          })
+          .map((item: any) => ({
+            name: item.name,
+            path: item.path,
+            url: `https://raw.githubusercontent.com/${activeRepo.owner}/${activeRepo.name}/main/${item.path}`
+          }));
+
+        setAvailableImages(images);
+      }
+    } catch (error) {
+      console.error('Failed to load images:', error);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
+  // Select an existing image from the repository
+  const selectExistingImage = (imagePath: string) => {
+    const displayPath = `./${imagePath}`;
+    if (formData) {
+      setFormData({ ...formData, heroImage: displayPath });
+      setImagePreviewUrl(null); // Clear data URL preview to use GitHub URL
+      setShowImageBrowser(false);
+    }
+  };
+
+  // Validate and fix image path on component mount
+  useEffect(() => {
+    if (!formData || !activeRepo) return;
+
+    const validateImagePath = async () => {
+      const currentPath = formData.heroImage;
+
+      // Skip if it's a data URL
+      if (currentPath.startsWith('data:')) return;
+
+      // Skip if it's empty
+      if (!currentPath) return;
+
+      // Skip if it's an external URL
+      if (currentPath.startsWith('http://') || currentPath.startsWith('https://')) return;
+
+      // Extract the path without leading ./
+      const cleanPath = currentPath.replace(/^\.\//, '');
+
+      // Check if the file exists in the repository
+      try {
+        const result = await GitHubApiService.getFileContent(
+          activeRepo.owner,
+          activeRepo.name,
+          cleanPath
+        );
+
+        // If file doesn't exist, try to find the first available image or clear it
+        if (!result.success) {
+          console.log(`Image ${cleanPath} not found in repository`);
+
+          // Try to load available images and use the first one, or clear the path
+          const imagesResult = await GitHubApiService.listDirectoryContents(
+            activeRepo.owner,
+            activeRepo.name,
+            'assets/images'
+          );
+
+          if (imagesResult.success && imagesResult.data && imagesResult.data.length > 0) {
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+            const firstImage = imagesResult.data.find((item: any) => {
+              const ext = item.name.split('.').pop()?.toLowerCase();
+              return item.type === 'file' && ext && imageExtensions.includes(ext);
+            });
+
+            if (firstImage) {
+              console.log(`Using first available image: ${firstImage.path}`);
+              setFormData({ ...formData, heroImage: `./${firstImage.path}` });
+            } else {
+              console.log('No images found, clearing path');
+              setFormData({ ...formData, heroImage: '' });
+            }
+          } else {
+            console.log('No images directory found, clearing path');
+            setFormData({ ...formData, heroImage: '' });
+          }
+        }
+      } catch (error) {
+        console.error('Error validating image path:', error);
+      }
+    };
+
+    validateImagePath();
+  }, [formData?.heroImage, activeRepo]); // Only run when heroImage or activeRepo changes
 
   const handleSave = async () => {
     if (!formData) return;
@@ -68,6 +205,102 @@ export const LandingHeroForm: React.FC = () => {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     }
+  };
+
+  // Handle hero image upload
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image size should be less than 2MB');
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      // Read file as base64
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result !== 'string') {
+          throw new Error('Failed to read file');
+        }
+
+        // Store the data URL in the heroImage field
+        if (formData) {
+          setFormData({ ...formData, heroImage: result });
+          setImagePreviewUrl(result);
+        }
+
+        alert(
+          `✅ Image uploaded successfully!\n\n` +
+          `The image has been loaded. Click "Save Changes" to save it to your landing page.`
+        );
+
+        setUploadingImage(false);
+      };
+
+      reader.onerror = () => {
+        alert('Failed to read image file. Please try again.');
+        setUploadingImage(false);
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error: any) {
+      alert(`❌ Failed to upload image\n\nError: ${error.message}`);
+      setUploadingImage(false);
+    }
+  };
+
+  // Get image preview URL
+  const getImagePreviewUrl = (): string | null => {
+    if (!formData?.heroImage) return null;
+
+    // If we have a preview URL from upload, use it
+    if (imagePreviewUrl) return imagePreviewUrl;
+
+    // If it's already a data URL, use it
+    if (formData.heroImage.startsWith('data:')) return formData.heroImage;
+
+    // If it's a full URL, use it
+    if (formData.heroImage.startsWith('http://') || formData.heroImage.startsWith('https://')) {
+      return formData.heroImage;
+    }
+
+    // If it's a relative path and we have an active repo, construct GitHub raw URL
+    if (formData.heroImage.startsWith('./')) {
+      if (!activeRepo) {
+        console.log('Cannot construct image URL: No active repository');
+        return null;
+      }
+      const cleanPath = formData.heroImage.replace('./', '');
+      const url = `https://raw.githubusercontent.com/${activeRepo.owner}/${activeRepo.name}/main/${cleanPath}`;
+      console.log('Constructed image URL:', url);
+      return url;
+    }
+
+    // If it starts with assets/, construct GitHub raw URL
+    if (formData.heroImage.startsWith('assets/')) {
+      if (!activeRepo) {
+        console.log('Cannot construct image URL: No active repository');
+        return null;
+      }
+      const url = `https://raw.githubusercontent.com/${activeRepo.owner}/${activeRepo.name}/main/${formData.heroImage}`;
+      console.log('Constructed image URL:', url);
+      return url;
+    }
+
+    return formData.heroImage;
   };
 
   if (loading || !formData) {
@@ -277,36 +510,262 @@ export const LandingHeroForm: React.FC = () => {
           <hr className="border-gray-200" />
 
           {/* Hero Image */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Hero Image Path
-            </label>
-            <input
-              type="text"
-              value={formData.heroImage}
-              onChange={(e) => setFormData({ ...formData, heroImage: e.target.value })}
-              className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all font-mono text-sm"
-              placeholder="./assets/images/hero-screenshot.png"
-            />
-            <p className="mt-1 text-sm text-gray-500">
-              Relative path to your hero image
+          <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Hero Image</h3>
+
+            {/* Image Preview */}
+            <div className="mb-4 rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-50">
+              {getImagePreviewUrl() ? (
+                <div className="w-full h-48 flex items-center justify-center bg-gray-100">
+                  <img
+                    src={getImagePreviewUrl()!}
+                    alt="Hero preview"
+                    className="max-w-full max-h-full object-contain"
+                    onError={(e) => {
+                      console.error('Image preview failed to load:', getImagePreviewUrl());
+                      e.currentTarget.onerror = null; // Prevent infinite loop
+                      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="192"%3E%3Crect fill="%23f3f4f6" width="400" height="192"/%3E%3Ctext fill="%239ca3af" x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="16"%3EImage not found%3C/text%3E%3C/svg%3E';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+                  <div className="text-center text-gray-400">
+                    <PhotoIcon className="mx-auto h-12 w-12 mb-2" />
+                    <p className="text-sm">No image selected</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Upload and Browse Buttons */}
+            <div className="mb-4 grid grid-cols-2 gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <PhotoIcon className="h-5 w-5" />
+                <span>{uploadingImage ? 'Uploading...' : 'Upload Image'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowImageBrowser(true)}
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all"
+              >
+                <FolderIcon className="h-5 w-5" />
+                <span>Browse Images</span>
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">
+              Upload from your computer or browse existing images from assets/images
             </p>
+
+            {/* Image Path Display (Read-only) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Image Path
+              </label>
+              <input
+                type="text"
+                value={formData.heroImage || 'No image selected'}
+                readOnly
+                disabled
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-gray-100 text-gray-600 font-mono text-sm cursor-not-allowed"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Use "Upload Image" or "Browse Images" to change the hero image
+              </p>
+            </div>
           </div>
 
           {/* Background Style */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Background Style
-            </label>
-            <select
-              value={formData.backgroundStyle}
-              onChange={(e) => setFormData({ ...formData, backgroundStyle: e.target.value })}
-              className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all"
-            >
-              <option value="gradient">Gradient (Blue to Purple)</option>
-              <option value="solid">Solid White</option>
-              <option value="pattern">Pattern</option>
-            </select>
+          <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Background Style</h3>
+
+            {/* Style Selector */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Background Type
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const gradient = `bg-gradient-${gradientDirection} from-[${gradientFrom}] to-[${gradientTo}]`;
+                    setFormData({ ...formData, backgroundStyle: gradient });
+                  }}
+                  className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                    formData.backgroundStyle.startsWith('bg-gradient')
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                  }`}
+                >
+                  Gradient
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, backgroundStyle: 'bg-white' })}
+                  className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                    formData.backgroundStyle === 'bg-white'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                  }`}
+                >
+                  Solid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, backgroundStyle: 'bg-gray-50' })}
+                  className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                    !formData.backgroundStyle.startsWith('bg-gradient') && formData.backgroundStyle !== 'bg-white'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                  }`}
+                >
+                  Custom
+                </button>
+              </div>
+            </div>
+
+            {/* Gradient Color Pickers */}
+            {formData.backgroundStyle.startsWith('bg-gradient') && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Start Color
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={gradientFrom}
+                        onChange={(e) => {
+                          setGradientFrom(e.target.value);
+                          const gradient = `bg-gradient-${gradientDirection} from-[${e.target.value}] to-[${gradientTo}]`;
+                          setFormData({ ...formData, backgroundStyle: gradient });
+                        }}
+                        className="h-10 w-20 rounded border-2 border-gray-300 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={gradientFrom}
+                        onChange={(e) => {
+                          setGradientFrom(e.target.value);
+                          const gradient = `bg-gradient-${gradientDirection} from-[${e.target.value}] to-[${gradientTo}]`;
+                          setFormData({ ...formData, backgroundStyle: gradient });
+                        }}
+                        className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 font-mono text-sm"
+                        placeholder="#3b82f6"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      End Color
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={gradientTo}
+                        onChange={(e) => {
+                          setGradientTo(e.target.value);
+                          const gradient = `bg-gradient-${gradientDirection} from-[${gradientFrom}] to-[${e.target.value}]`;
+                          setFormData({ ...formData, backgroundStyle: gradient });
+                        }}
+                        className="h-10 w-20 rounded border-2 border-gray-300 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={gradientTo}
+                        onChange={(e) => {
+                          setGradientTo(e.target.value);
+                          const gradient = `bg-gradient-${gradientDirection} from-[${gradientFrom}] to-[${e.target.value}]`;
+                          setFormData({ ...formData, backgroundStyle: gradient });
+                        }}
+                        className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 font-mono text-sm"
+                        placeholder="#a855f7"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Gradient Direction
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {['to-r', 'to-br', 'to-b', 'to-bl'].map((dir) => (
+                      <button
+                        key={dir}
+                        type="button"
+                        onClick={() => {
+                          setGradientDirection(dir);
+                          const gradient = `bg-gradient-${dir} from-[${gradientFrom}] to-[${gradientTo}]`;
+                          setFormData({ ...formData, backgroundStyle: gradient });
+                        }}
+                        className={`px-3 py-2 rounded border-2 font-medium text-sm transition-all ${
+                          gradientDirection === dir
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                        }`}
+                      >
+                        {dir === 'to-r' ? '→' : dir === 'to-br' ? '↘' : dir === 'to-b' ? '↓' : '↙'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Custom CSS Input */}
+            {!formData.backgroundStyle.startsWith('bg-gradient') && formData.backgroundStyle !== 'bg-white' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Custom CSS (Tailwind classes)
+                </label>
+                <textarea
+                  value={formData.backgroundStyle}
+                  onChange={(e) => setFormData({ ...formData, backgroundStyle: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all font-mono text-sm"
+                  placeholder="bg-gradient-to-r from-blue-500 to-purple-600"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Enter Tailwind CSS classes (e.g., "bg-gradient-to-br from-blue-50 via-white to-purple-50")
+                </p>
+              </div>
+            )}
+
+            {/* Preview */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preview
+              </label>
+              <div
+                className={`h-24 rounded-lg border-2 border-gray-300 ${formData.backgroundStyle}`}
+                style={
+                  formData.backgroundStyle.includes('from-[') && formData.backgroundStyle.includes('to-[')
+                    ? {
+                        background: `linear-gradient(${
+                          gradientDirection === 'to-r' ? 'to right' :
+                          gradientDirection === 'to-br' ? 'to bottom right' :
+                          gradientDirection === 'to-b' ? 'to bottom' :
+                          'to bottom left'
+                        }, ${gradientFrom}, ${gradientTo})`
+                      }
+                    : undefined
+                }
+              />
+            </div>
           </div>
 
           <hr className="border-gray-200 my-8" />
@@ -703,6 +1162,75 @@ export const LandingHeroForm: React.FC = () => {
             Preview changes on live site
           </a>
         </div>
+
+        {/* Image Browser Modal */}
+        {showImageBrowser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Browse Repository Images</h3>
+                <button
+                  onClick={() => setShowImageBrowser(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {loadingImages ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                  </div>
+                ) : availableImages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FolderIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-4 text-gray-600">No images found in assets/images</p>
+                    <p className="mt-2 text-sm text-gray-500">Upload an image first to see it here</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {availableImages.map((image) => (
+                      <button
+                        key={image.path}
+                        onClick={() => selectExistingImage(image.path)}
+                        className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all hover:shadow-lg"
+                      >
+                        <img
+                          src={image.url}
+                          alt={image.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle"%3EError%3C/text%3E%3C/svg%3E';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-end">
+                          <div className="w-full p-2 bg-black bg-opacity-75 text-white text-xs truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                            {image.name}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <button
+                  onClick={() => setShowImageBrowser(false)}
+                  className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

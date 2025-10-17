@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RocketLaunchIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
+import { useLandingPageData } from '../../../hooks/useLandingPageData';
+import { useRepo } from '../../../hooks/useRepo';
 
 interface TrustBadge {
   text: string;
@@ -36,21 +38,51 @@ interface HeroData {
 
 export const HeroSection: React.FC = () => {
   const [data, setData] = useState<HeroData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { loadContent, loading } = useLandingPageData();
+  const { activeRepo } = useRepo();
 
   useEffect(() => {
-    // Load hero data from JSON
-    fetch('/data/hero.json')
-      .then((res) => res.json())
-      .then((heroData) => {
+    // Load hero data using the hook (checks localStorage first)
+    loadContent('hero').then((heroData) => {
+      if (heroData) {
         setData(heroData);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Failed to load hero data:', error);
-        setLoading(false);
-      });
-  }, []);
+      }
+    });
+  }, [loadContent]);
+
+  // Get the proper image URL for display
+  const getImageUrl = (imagePath: string): string => {
+    if (!imagePath) return 'https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=AlmostaCMS';
+
+    // If it's a data URL, use it directly
+    if (imagePath.startsWith('data:')) return imagePath;
+
+    // If it's a full URL, use it directly
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+
+    // If it's a relative path and we have an active repo, construct GitHub raw URL
+    if (imagePath.startsWith('./')) {
+      if (!activeRepo) {
+        console.log('Cannot construct image URL: No active repository');
+        return 'https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=AlmostaCMS';
+      }
+      const cleanPath = imagePath.replace('./', '');
+      return `https://raw.githubusercontent.com/${activeRepo.owner}/${activeRepo.name}/main/${cleanPath}`;
+    }
+
+    // If it starts with assets/, construct GitHub raw URL
+    if (imagePath.startsWith('assets/')) {
+      if (!activeRepo) {
+        console.log('Cannot construct image URL: No active repository');
+        return 'https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=AlmostaCMS';
+      }
+      return `https://raw.githubusercontent.com/${activeRepo.owner}/${activeRepo.name}/main/${imagePath}`;
+    }
+
+    return imagePath;
+  };
 
   if (loading) {
     return (
@@ -132,11 +164,12 @@ export const HeroSection: React.FC = () => {
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
               <img
-                src={data.heroImage}
+                src={getImageUrl(data.heroImage)}
                 alt="AlmostaCMS Preview"
                 className="w-full h-auto"
                 onError={(e) => {
                   // Fallback to placeholder if image doesn't exist
+                  console.error('Hero image failed to load:', data.heroImage);
                   e.currentTarget.src = 'https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=AlmostaCMS';
                 }}
               />
