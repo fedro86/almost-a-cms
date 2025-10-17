@@ -1,5 +1,8 @@
 __pycache__/
 *.pyc
+.mypy_cache/
+htmlcov/
+.pytest_cache/
 
 index_old.html
 
@@ -38,9 +41,10 @@ venv/
 ENV/
 env/
 
-# IDEs
+# IDEs and Claude Code
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 *~

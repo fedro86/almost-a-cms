@@ -19,7 +19,7 @@ export function DashboardWrapper() {
   const [state, setState] = useState<AppState>('dashboard');
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [currentData, setCurrentData] = useState<ContentData | null>(null);
-  const { loading, error, loadContent, saveContent, generateHtml, clearError } = useApi();
+  const { loading, error, loadContent, saveContent, clearError } = useApi();
   const { user, logout } = useAuth();
   const { loading: repoLoading, hasActiveRepo } = useRepo();
 
@@ -62,9 +62,6 @@ export function DashboardWrapper() {
     clearError();
   };
 
-  const handleGenerateHtml = async () => {
-    await generateHtml();
-  };
 
   // Clear error after 5 seconds
   useEffect(() => {
@@ -104,10 +101,7 @@ export function DashboardWrapper() {
         </div>
       )}
 
-      <Layout
-        onGenerateHtml={state === 'dashboard' ? handleGenerateHtml : undefined}
-        isGenerating={loading && state === 'dashboard'}
-      >
+      <Layout>
         {/* Error Toast */}
         {error && (
           <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-md">

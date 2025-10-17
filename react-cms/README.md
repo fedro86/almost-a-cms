@@ -1,27 +1,33 @@
-# Almost-a-CMS React Edition
+# Almost-a-CMS React Application
 
-A modern, mobile-friendly React interface for the Almost-a-CMS project.
+The modern React-based CMS interface for managing portfolio websites via GitHub API.
+
+---
 
 ## Features
 
-✨ **Modern Design**
-- Clean, professional interface built with Tailwind CSS
-- Fully responsive and mobile-first design
-- Smooth animations and transitions
-- Dark mode ready (easily extendable)
+### GitHub Integration
+- **OAuth Authentication** - Secure login with GitHub
+- **Direct API Integration** - No backend database needed
+- **Repository Management** - Create and manage portfolio repos
+- **Live Updates** - Changes commit directly to GitHub
+- **Auto-deployment** - GitHub Actions rebuilds site on save
 
-🎯 **User Experience**
-- Intuitive dashboard with content section cards
-- Real-time JSON validation
-- Auto-save functionality
-- Error handling with user-friendly messages
-- Loading states and progress indicators
+### User Experience
+- **Intuitive Dashboard** - Content section cards with visual icons
+- **Form-based Editing** - No JSON manipulation required
+- **Real-time Validation** - Instant feedback on data format
+- **Loading States** - Progress indicators for async operations
+- **Error Handling** - User-friendly error messages
 
-📱 **Mobile-Friendly**
-- Optimized for all screen sizes
-- Touch-friendly interface
-- Responsive grid layouts
-- Mobile navigation patterns
+### Design
+- **Modern Interface** - Built with Tailwind CSS
+- **Fully Responsive** - Optimized for all screen sizes
+- **Mobile-First** - Touch-friendly interactions
+- **Smooth Animations** - Professional transitions
+- **Dark Mode Ready** - Easily extendable theme system
+
+---
 
 ## Tech Stack
 
@@ -29,14 +35,18 @@ A modern, mobile-friendly React interface for the Almost-a-CMS project.
 - **Vite** for fast development and building
 - **Tailwind CSS** for styling
 - **Heroicons** for consistent iconography
-- **Axios** for API communication
+- **Octokit/GitHub API** for repository operations
+- **React Router** for navigation
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 16+
-- The original Flask backend running on port 5000
+- **Node.js** 18+ and npm
+- **OAuth Proxy Server** running (see [../oauth-proxy/README.md](../oauth-proxy/README.md))
+- **GitHub OAuth App** configured (see [../docs/OAUTH_SETUP.md](../docs/OAUTH_SETUP.md))
 
 ### Installation
 
@@ -46,108 +56,187 @@ A modern, mobile-friendly React interface for the Almost-a-CMS project.
    npm install
    ```
 
-2. **Start development server:**
+2. **Configure environment:**
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` with your GitHub OAuth Client ID:
+   ```bash
+   VITE_GITHUB_CLIENT_ID=your_client_id_here
+   VITE_OAUTH_REDIRECT_URI=http://localhost:3000/auth/callback
+   VITE_APP_URL=http://localhost:3000
+   VITE_TEMPLATE_OWNER=almostacms
+   VITE_TEMPLATE_REPO=vcard-portfolio-template
+   ```
+
+3. **Start development server:**
    ```bash
    npm run dev
    ```
 
-3. **Open your browser:**
-   ```
-   http://localhost:3000
-   ```
+The application will be available at `http://localhost:3000`
 
-### Backend Integration
+---
 
-The React app is configured to proxy API requests to the Flask backend:
-- React app runs on `localhost:3000`
-- Flask backend should run on `localhost:5000`
-- API calls are automatically proxied via Vite configuration
+## Development Workflow
 
-## Usage
+### Running the Full Stack
 
-1. **Dashboard View**: Overview of all content sections with stats
-2. **Content Cards**: Click any section to edit its JSON content
-3. **JSON Editor**: Real-time syntax validation and formatting
-4. **Auto-Generation**: Saves trigger automatic HTML regeneration
-5. **Mobile Support**: Works seamlessly on phones and tablets
+You need **two terminal windows**:
 
-## Project Structure
+**Terminal 1: OAuth Proxy**
+```bash
+cd oauth-proxy
+npm start
+# Server runs on http://localhost:3001
+```
+
+**Terminal 2: React App**
+```bash
+cd react-cms
+npm run dev
+# App runs on http://localhost:3000
+```
+
+### Project Structure
 
 ```
 react-cms/
 ├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── Layout.tsx       # Main layout wrapper
-│   │   ├── ContentCard.tsx  # Content section cards
-│   │   └── JsonEditor.tsx   # JSON editing interface
-│   ├── pages/              # Main application pages
-│   │   └── Dashboard.tsx   # Content management dashboard
+│   ├── components/          # React components
+│   │   ├── auth/           # Authentication components
+│   │   ├── setup/          # First-time setup wizard
+│   │   └── Layout.tsx      # Main layout component
+│   ├── contexts/           # React contexts
+│   │   └── AuthContext.tsx # Authentication state
 │   ├── hooks/              # Custom React hooks
-│   │   └── useApi.ts       # API communication logic
-│   ├── types/              # TypeScript type definitions
-│   │   └── index.ts        # Shared interface definitions
-│   ├── App.tsx             # Main application component
-│   ├── main.tsx            # Application entry point
-│   └── index.css           # Global styles and Tailwind
-├── package.json            # Dependencies and scripts
-├── vite.config.ts          # Vite configuration
-├── tailwind.config.js      # Tailwind CSS configuration
-└── tsconfig.json           # TypeScript configuration
+│   │   ├── useApi.ts       # GitHub API operations
+│   │   ├── useGitHub.ts    # GitHub repository management
+│   │   └── useRepo.ts      # Active repository state
+│   ├── pages/              # Route pages
+│   │   ├── Landing.tsx     # Landing/marketing page
+│   │   └── DashboardWrapper.tsx # Main dashboard
+│   ├── services/           # Service layer
+│   │   ├── auth.ts         # OAuth authentication
+│   │   └── github-api.ts   # GitHub API wrapper
+│   ├── utils/              # Utility functions
+│   │   └── tokenStorage.ts # Secure token storage
+│   ├── config/             # Configuration
+│   │   ├── constants.ts    # App constants
+│   │   └── github.ts       # GitHub API config
+│   └── App.tsx             # Main app with routing
+├── public/                 # Static assets
+├── .env.example            # Environment template
+└── package.json
 ```
-
-## Key Features
-
-### 🎨 Modern UI Components
-
-- **ContentCard**: Interactive cards for each content section
-- **JsonEditor**: Full-featured JSON editor with validation
-- **Layout**: Responsive layout with header and navigation
-- **Dashboard**: Stats overview and content management
-
-### 🔗 API Integration
-
-- Seamless integration with existing Flask backend
-- Real-time error handling and user feedback
-- Automatic HTML generation after content updates
-- Loading states for better user experience
-
-### 📱 Responsive Design
-
-- Mobile-first approach
-- Flexible grid layouts
-- Touch-friendly interface elements
-- Optimized for all screen sizes
-
-## Development
-
-### Building for Production
-
-```bash
-npm run build
-```
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-## Customization
-
-The React app is highly customizable:
-
-- **Colors**: Modify `tailwind.config.js` to change the color scheme
-- **Components**: All components are modular and easily extendable
-- **API**: Update `src/hooks/useApi.ts` for different backend endpoints
-- **Layout**: Customize `src/components/Layout.tsx` for different structures
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-- Mobile browsers (iOS Safari, Chrome Mobile)
 
 ---
 
-Built with ❤️ using React + TypeScript + Tailwind CSS
+## Available Scripts
+
+### Development
+```bash
+npm run dev          # Start development server (http://localhost:3000)
+npm run build        # Build for production
+npm run preview      # Preview production build locally
+```
+
+### Code Quality
+```bash
+npm run lint         # Run ESLint
+npm run type-check   # Run TypeScript compiler check
+```
+
+---
+
+## Key Components
+
+### Authentication Flow
+1. User clicks "Login with GitHub" on Landing page
+2. Redirected to GitHub OAuth authorization
+3. GitHub redirects back with authorization code
+4. Code exchanged for access token via OAuth proxy
+5. Token stored securely in sessionStorage
+6. User authenticated and redirected to dashboard
+
+### Content Editing Flow
+1. User selects content section (About, Resume, etc.)
+2. React form loads current data from GitHub repository
+3. User edits content in form fields
+4. On save, creates commit with changes to GitHub
+5. GitHub Actions workflow triggered automatically
+6. Static site rebuilt and deployed to GitHub Pages
+
+### Repository Management
+- **First-time users:** Guided through repository creation wizard
+- **Returning users:** Auto-loads previously selected repository
+- **Repository switching:** Can manage multiple portfolio repos
+
+---
+
+## Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_GITHUB_CLIENT_ID` | GitHub OAuth App Client ID | `Ov23litiAP9ip6g2JQGv` |
+| `VITE_OAUTH_REDIRECT_URI` | OAuth callback URL | `http://localhost:3000/auth/callback` |
+| `VITE_APP_URL` | Application base URL | `http://localhost:3000` |
+| `VITE_TEMPLATE_OWNER` | Template repo owner | `almostacms` |
+| `VITE_TEMPLATE_REPO` | Template repo name | `vcard-portfolio-template` |
+
+---
+
+## Security Notes
+
+- **Client Secret:** Never exposed to frontend (handled by oauth-proxy)
+- **Access Tokens:** Stored in sessionStorage (cleared on browser close)
+- **CSRF Protection:** OAuth state parameter validates callback
+- **Scope Limitation:** Only requests necessary GitHub permissions
+
+---
+
+## Documentation
+
+For comprehensive guides, see:
+- [Getting Started Guide](../docs/GETTING_STARTED.md)
+- [OAuth Setup](../docs/OAUTH_SETUP.md)
+- [Architecture Documentation](../docs/ARCHITECTURE.md)
+- [OAuth Proxy Setup](../oauth-proxy/README.md)
+
+---
+
+## Troubleshooting
+
+### "Cannot connect to OAuth proxy"
+**Solution:** Ensure oauth-proxy is running on port 3001
+```bash
+cd oauth-proxy && npm start
+```
+
+### "Authentication failed"
+**Solution:** Check your `.env` has correct GitHub Client ID
+
+### "Repository creation failed"
+**Solution:** Verify template repository exists and is accessible
+
+### CORS errors
+**Solution:** OAuth proxy must be running on localhost:3001
+
+---
+
+## Contributing
+
+This is the main application interface for Almost-a-CMS. When contributing:
+
+1. Follow TypeScript best practices
+2. Maintain responsive design patterns
+3. Add proper error handling
+4. Update this README if adding new features
+5. Test OAuth flow thoroughly
+
+---
+
+## License
+
+MIT License - See [../LICENSE](../LICENSE) for details

@@ -7,7 +7,6 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
-flask = "^2.0"
 jinja2 = "^3.0"
 
 [build-system]

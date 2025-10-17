@@ -52,7 +52,7 @@ export const FormRouter: React.FC<FormRouterProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">
-            Editing: {filename}.json
+            {getFormTitle(filename)}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             {getFormDescription(filename)}
@@ -195,6 +195,21 @@ export const FormRouter: React.FC<FormRouterProps> = ({
     </div>
   );
 };
+
+// Helper function to get form title
+function getFormTitle(filename: string): string {
+  const titles: Record<string, string> = {
+    about: 'About Section',
+    resume: 'Resume & Experience',
+    portfolio: 'Portfolio Projects',
+    blog: 'Blog Posts',
+    contact: 'Contact Information',
+    navbar: 'Navigation Menu',
+    sidebar: 'Sidebar Profile'
+  };
+
+  return titles[filename] || `Editing ${filename}`;
+}
 
 // Helper function to get form description
 function getFormDescription(filename: string): string {

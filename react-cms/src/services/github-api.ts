@@ -185,6 +185,43 @@ export class GitHubApiService {
   }
 
   /**
+   * List files in a directory
+   */
+  async listDirectoryContents(owner: string, repo: string, path: string) {
+    const octokit = this.getOctokit();
+
+    try {
+      const { data } = await octokit.repos.getContent({
+        owner,
+        repo,
+        path,
+      });
+
+      // Ensure data is an array (directory listing)
+      if (Array.isArray(data)) {
+        return {
+          success: true,
+          data: data.map(item => ({
+            name: item.name,
+            path: item.path,
+            type: item.type,
+            size: item.size,
+            sha: item.sha,
+            downloadUrl: item.download_url,
+          }))
+        };
+      }
+
+      return {
+        success: false,
+        error: 'Path is not a directory'
+      };
+    } catch (error: any) {
+      return this.handleError(error, 'Failed to list directory contents');
+    }
+  }
+
+  /**
    * Create or update file in repository
    */
   async updateFileContent(
@@ -216,6 +253,42 @@ export class GitHubApiService {
       };
     } catch (error: any) {
       return this.handleError(error, 'Failed to update file');
+    }
+  }
+
+  /**
+   * Upload binary file (like images) to repository
+   * Content should be base64-encoded string (without the data:... prefix)
+   */
+  async uploadBinaryFile(
+    owner: string,
+    repo: string,
+    path: string,
+    base64Content: string,
+    sha?: string,
+    message?: string
+  ) {
+    const octokit = this.getOctokit();
+
+    try {
+      const { data } = await octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path,
+        message: message || `Upload ${path} via AlmostaCMS`,
+        content: base64Content, // Already base64-encoded, don't encode again
+        sha, // Required for updates
+      });
+
+      return {
+        success: true,
+        data: {
+          sha: data.content?.sha,
+          commitUrl: data.commit.html_url,
+        }
+      };
+    } catch (error: any) {
+      return this.handleError(error, 'Failed to upload file');
     }
   }
 

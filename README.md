@@ -1,6 +1,6 @@
-# Almost-a-CMS for vCard – Personal Portfolio
+# Almost-a-CMS - Portfolio Website Manager
 
-This repository contains a **very basic Content Management System (almost-a-cms)** for generating websites on GitHub using the [vCard – Personal Portfolio](https://github.com/codewithsadee/vcard-personal-portfolio) template developed by codewithsadee. It was created as part of the GitHub Copilot Challenge: New Beginnings.
+A modern, GitHub-powered CMS for creating and managing beautiful portfolio websites. Edit content through an intuitive web interface and deploy automatically to GitHub Pages - all while maintaining full ownership of your code.
 
 ---
 
@@ -8,16 +8,13 @@ This repository contains a **very basic Content Management System (almost-a-cms)
 
 - [About the Project](#about-the-project)
 - [Features](#features)
-- [Screenshots / Demo](#screenshots--demo)
+- [Architecture](#architecture)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
-  - [1. Command-Line Generation](#1-command-line-generation)
-  - [2. Flask Backend](#2-flask-backend)
 - [Project Structure](#project-structure)
-- [Copilot Experience](#copilot-experience)
-- [GitHub Models](#github-models)
+- [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -25,24 +22,77 @@ This repository contains a **very basic Content Management System (almost-a-cms)
 
 ## About the Project
 
-**Goal**: Simplify the editing of static fields in the `vCard – Personal Portfolio` template by separating the site’s content into JSON files, then automatically generating an `index.html` from these JSON files using Python and Jinja2. We also built a minimal Flask backend to enable edits via a local web interface.
+**Almost-a-CMS** simplifies portfolio website creation by combining:
+- **Modern React interface** for content editing
+- **GitHub API integration** for data storage (no backend database needed)
+- **OAuth authentication** for secure GitHub access
+- **Automatic deployment** via GitHub Actions
+- **Static site generation** from JSON content files
+
+Based on the beautiful [vCard – Personal Portfolio](https://github.com/codewithsadee/vcard-personal-portfolio) template.
 
 ---
 
 ## Features
 
-- **JSON-based content management**: Each site section has its own `.json` file, making content updates simple.
-- **Auto-generate HTML**: A Python script (`index_html_generator.py`) reads the JSON data and populates the HTML template.
-- **Flask editing interface**: Run a small Flask server (`app.py`) to edit JSON files in a basic GUI. Saving changes triggers the HTML rebuild.
-- **Easily deployable**: Once you’ve generated the final `index.html`, push it to GitHub to publish with GitHub Pages.
+- **GitHub OAuth Login** - Secure authentication with your GitHub account
+- **Repository Management** - Create portfolios from template or connect existing repos
+- **Visual Content Editor** - Edit portfolio content through React forms
+- **Live Preview** - See changes in real-time
+- **Automatic Deployment** - GitHub Actions builds and deploys your site
+- **Zero Server Costs** - Fully serverless architecture
+- **You Own Your Data** - Everything lives in your GitHub repository
+- **GitHub Pages Hosting** - Free hosting for your portfolio
 
 ---
 
-## Screenshots / Demo
+## Architecture
 
-To see the demo for the two approaches (direct json/backend modification), please refer for the moment check the post on dev.to [post](https://dev.to/fedro_ita/building-a-mini-cms-for-vcard-personal-portfolio-with-github-copilot-768)
+### Modern Stack (Current)
 
-A version on github of the demo will be published soon.
+```
+┌─────────────────┐
+│   React CMS     │ ← Edit content via web interface
+│  (react-cms/)   │
+└────────┬────────┘
+         │ OAuth
+         ↓
+┌─────────────────┐
+│  OAuth Proxy    │ ← Token exchange server
+│ (oauth-proxy/)  │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│   GitHub API    │ ← Content stored in repo data/ folder
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ GitHub Actions  │ ← Auto-build & deploy on changes
+│   (.github/)    │
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│  GitHub Pages   │ ← Static portfolio site (index.html)
+└─────────────────┘
+```
+
+### Static Site Generation
+
+```
+data/*.json  →  index_html_generator.py  →  index.html
+                        ↑
+                  template_index.html
+```
+
+**Key Components:**
+- **React CMS** - Modern web interface for editing
+- **OAuth Proxy** - Secure token exchange (Node.js/Express)
+- **GitHub API** - Storage and version control
+- **Python Generator** - Converts JSON → HTML using Jinja2
+- **GitHub Actions** - Automated build/deploy pipeline
 
 ---
 
@@ -50,61 +100,114 @@ A version on github of the demo will be published soon.
 
 ### Prerequisites
 
-- **Python** 3.10+ (recommended)
-- [pip](https://pip.pypa.io/en/stable/installation/) for installing dependencies
-- [miniconda](https://docs.anaconda.com/miniconda/install/) as alternative to pip for installing dependencies
+- **Node.js** 18+ and npm
+- **Python** 3.10+
+- **Poetry** (for Python dependencies)
+- **GitHub Account** with OAuth App configured
 
 ### Installation
 
-1. **Clone this repository** (or fork and then clone):
-```
-git clone https://github.com/your-username/almost-a-cms-vcard.git
-cd almost-a-cms-vcard
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/almost-a-cms.git
+   cd almost-a-cms
+   ```
 
-2. **Install required dependencies**:
-```
-conda env create -f environment.yaml
-conda activate almost-a-cms
-```
-If you don’t have conda, you can install manually:
-```
-pip install flask jinja2
-```
+2. **Set up OAuth Proxy Server**
+   ```bash
+   cd oauth-proxy
+   npm install
+   cp .env.example .env
+   # Edit .env with your GitHub OAuth credentials
+   ```
 
-3. **Review the folder structure** to understand where templates and data files reside.
+3. **Set up React CMS**
+   ```bash
+   cd ../react-cms
+   npm install
+   cp .env.example .env
+   # Configure GitHub OAuth client ID
+   ```
+
+4. **Install Python dependencies** (for static site generation)
+   ```bash
+   cd ..
+   poetry install
+   ```
+
+For detailed setup instructions, see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) and [docs/OAUTH_SETUP.md](docs/OAUTH_SETUP.md).
+
+---
 
 ## Usage
 
-There are two primary ways to edit the website content:
+### Running the Application
 
-1. Command-Line Generation:
+You need **two terminal windows**:
 
-    Edit the JSON files in data/. For example, open data/about.json and change the "name" or "description" field.
-    Run the generator script:
-    ```
-    python index_html_generator.py
-    ```
-    This command regenerates index.html with your updated content.
-    Push your changes (including the new index.html) to GitHub to publish or update your GitHub Pages site.
+**Terminal 1: OAuth Proxy Server**
+```bash
+cd oauth-proxy
+npm start
+# Server runs on http://localhost:3001
+```
 
-2. Flask Backend:
+**Terminal 2: React CMS**
+```bash
+cd react-cms
+npm run dev
+# App runs on http://localhost:3000
+```
 
-    1. Run the Flask server:
-    ```
-    python app.py
-    ```
-    2. Open your browser at http://127.0.0.1:5000.
-    3. Navigate to the editing interface (e.g., click on a section or go to /edit/<filename>) to view and modify your JSON content in a simple text box.
-    4. Save changes in the interface. Behind the scenes:
-    - The JSON file is updated.
-    - index_html_generator.py is automatically triggered to regenerate index.html.
-    5. Verify your site by refreshing your local preview or your GitHub Pages site (after committing and pushing changes).
+### Workflow
+
+1. **Login** - Authenticate with your GitHub account
+2. **Create/Select Repository** - Create new portfolio or connect existing one
+3. **Edit Content** - Use the web interface to update portfolio sections
+4. **Save Changes** - Each save commits directly to your GitHub repository
+5. **Auto-Deploy** - GitHub Actions automatically rebuilds and deploys your site
+
+### Static Site Generation (Manual)
+
+If you want to generate the static site locally:
+
+```bash
+poetry run python index_html_generator.py
+```
+
+This reads `data/*.json` files and generates `index.html` using `template_index.html`.
+
+---
 
 ## Project Structure
+
 ```
 .
-├── data/
+├── react-cms/              # React CMS interface (main application)
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── hooks/          # Custom React hooks (useApi, useRepo, etc.)
+│   │   ├── contexts/       # Auth context
+│   │   ├── services/       # GitHub API service
+│   │   └── pages/          # App pages
+│   └── package.json
+│
+├── oauth-proxy/            # OAuth token exchange server
+│   ├── server.js           # Express server
+│   ├── .env.example        # Environment template
+│   └── package.json
+│
+├── .github/
+│   └── workflows/
+│       └── deploy.yml      # Auto-deployment workflow
+│
+├── docs/                   # Documentation
+│   ├── ARCHITECTURE.md     # System architecture
+│   ├── GETTING_STARTED.md  # Setup guide
+│   ├── OAUTH_SETUP.md      # OAuth configuration
+│   └── TEMPLATE_REPO_SETUP.md
+│
+├── data/                   # Portfolio content (JSON files)
 │   ├── about.json
 │   ├── blog.json
 │   ├── contact.json
@@ -112,30 +215,60 @@ There are two primary ways to edit the website content:
 │   ├── resume.json
 │   ├── navbar.json
 │   └── sidebar.json
-├── templates/
-│   └── template_index.html      # Jinja2 template used to generate index.html
-├── index_html_generator.py      # Script to generate index.html from the JSON files
-├── app.py                       # Flask backend for editing JSON data
-├── environment.yaml             # (Optional) Python dependencies
-└── README.md                    # This file
+│
+├── assets/                 # Static site assets (CSS, JS, images)
+│   ├── css/
+│   ├── js/
+│   └── images/
+│
+├── index_html_generator.py # Generates static site from JSON
+├── template_index.html     # Jinja2 template for static site
+├── index.html              # Generated portfolio site
+├── pyproject.toml          # Python dependencies
+└── README.md               # This file
 ```
-- data/ contains the JSON files for each site section.
-- template_index.html is the Jinja2 template for the final website.
-- index_html_generator.py merges data/ JSON content with template_index.html.
-- app.py provides a minimal Flask app to edit JSON files through a local web interface.
+
+---
+
+## Documentation
+
+Comprehensive documentation available in [docs/](docs/):
+
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System architecture and design decisions
+- **[GETTING_STARTED.md](docs/GETTING_STARTED.md)** - Detailed setup guide
+- **[OAUTH_SETUP.md](docs/OAUTH_SETUP.md)** - OAuth configuration walkthrough
+- **[TEMPLATE_REPO_SETUP.md](docs/TEMPLATE_REPO_SETUP.md)** - Template repository setup
+
+Additional guides in [docs/temp/](docs/temp/):
+- Phase completion notes
+- Quick start guides
+- Testing guides
+
+---
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the Issues page to report a bug or request a feature.
+Contributions are welcome! Feel free to check the [Issues](https://github.com/your-username/almost-a-cms/issues) page.
 
 1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/someFeature`)
-3. Commit your Changes (`git commit -m 'Add some feature'`)
-4. Push to the Branch (`git push origin feature/someFeature`)
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+---
 
 ## License
 
-This project is licensed under the MIT License. You’re free to use, modify, and distribute it as needed.
+This project is licensed under the MIT License. You're free to use, modify, and distribute it as needed.
 
-Thank you for checking out the project. Feel free to open an issue or pull request if you have any improvements or feedback!
+---
+
+## Acknowledgments
+
+- Original portfolio template by [codewithsadee/vcard-personal-portfolio](https://github.com/codewithsadee/vcard-personal-portfolio)
+- Built as part of the GitHub Copilot Challenge: New Beginnings
+
+---
+
+**Questions or feedback?** Open an issue or pull request!

@@ -1,13 +1,11 @@
 import React from 'react';
-import { Cog6ToothIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon } from '@heroicons/react/24/outline';
 
 interface LayoutProps {
   children: React.ReactNode;
-  onGenerateHtml?: () => void;
-  isGenerating?: boolean;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, onGenerateHtml, isGenerating }) => {
+export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
@@ -20,20 +18,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, onGenerateHtml, isGene
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Almost-a-CMS</h1>
-                <p className="text-sm text-gray-500">React Edition</p>
+                <p className="text-sm text-gray-500">Content auto-deploys on save via GitHub Actions</p>
               </div>
             </div>
-
-            {onGenerateHtml && (
-              <button
-                onClick={onGenerateHtml}
-                disabled={isGenerating}
-                className="btn-primary flex items-center space-x-2"
-              >
-                <DocumentTextIcon className="h-5 w-5" />
-                <span>{isGenerating ? 'Generating...' : 'Generate HTML'}</span>
-              </button>
-            )}
           </div>
         </div>
       </header>
