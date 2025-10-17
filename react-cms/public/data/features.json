@@ -1,0 +1,42 @@
+{
+  "sectionTitle": "Why AlmostaCMS?",
+  "sectionSubtitle": "Everything you need to create a professional website",
+  "features": [
+    {
+      "id": "free",
+      "icon": "currency-dollar",
+      "title": "Free Forever",
+      "description": "No hosting costs, no hidden fees. GitHub Pages hosting included."
+    },
+    {
+      "id": "visual-editor",
+      "icon": "pencil",
+      "title": "Visual Editor",
+      "description": "Edit your content with beautiful forms. No coding required."
+    },
+    {
+      "id": "own-data",
+      "icon": "lock-closed",
+      "title": "You Own Your Data",
+      "description": "Everything lives in your GitHub repository. Export anytime."
+    },
+    {
+      "id": "modern",
+      "icon": "sparkles",
+      "title": "Modern Stack",
+      "description": "Built with React and TypeScript, not outdated PHP."
+    },
+    {
+      "id": "version-control",
+      "icon": "clock",
+      "title": "Version Control",
+      "description": "Git-powered. See every change, rollback anytime."
+    },
+    {
+      "id": "open-source",
+      "icon": "code-bracket",
+      "title": "Open Source",
+      "description": "MIT licensed. Transparent, community-driven development."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "sectionTitle": "Get Started in 60 Seconds",
+  "sectionSubtitle": "Three simple steps to your new website",
+  "steps": [
+    {
+      "number": 1,
+      "icon": "user-circle",
+      "title": "Login with GitHub",
+      "description": "Secure OAuth authentication. No passwords to remember.",
+      "illustration": "./assets/images/step-1.svg"
+    },
+    {
+      "number": 2,
+      "icon": "template",
+      "title": "Choose Your Template",
+      "description": "Personal website or landing page. More templates coming soon.",
+      "illustration": "./assets/images/step-2.svg"
+    },
+    {
+      "number": 3,
+      "icon": "pencil-square",
+      "title": "Start Editing",
+      "description": "Your site is live! Edit anytime with the built-in CMS.",
+      "illustration": "./assets/images/step-3.svg"
+    }
+  ]
+}

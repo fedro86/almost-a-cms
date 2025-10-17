@@ -1,0 +1,24 @@
+{
+  "sectionTitle": "Built with AlmostaCMS",
+  "sectionSubtitle": "Real websites created by our users",
+  "sites": [
+    {
+      "id": "almostacms",
+      "name": "AlmostaCMS",
+      "creator": "AlmostaCMS Team",
+      "url": "https://almostacms.com",
+      "screenshot": "./assets/images/showcase/almostacms.png",
+      "template": "landing-page",
+      "featured": true
+    },
+    {
+      "id": "federico-portfolio",
+      "name": "Federico Conticello",
+      "creator": "Federico Conticello",
+      "url": "https://federicoconticello.com/my-portfolio-test",
+      "screenshot": "./assets/images/showcase/federico.png",
+      "template": "personal-website",
+      "featured": true
+    }
+  ]
+}
