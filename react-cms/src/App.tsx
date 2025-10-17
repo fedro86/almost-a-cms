@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { Landing } from './pages/Landing';
+import { LandingPage } from './views/Public/LandingPage';
 import { AuthCallback } from './components/auth/AuthCallback';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardWrapper } from './pages/DashboardWrapper';
@@ -16,17 +16,23 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
 
-          {/* Protected Routes */}
+          {/* Protected Routes - Admin Dashboard */}
           <Route
-            path="/dashboard"
+            path="/admin"
             element={
               <ProtectedRoute>
                 <DashboardWrapper />
               </ProtectedRoute>
             }
+          />
+
+          {/* Legacy route - redirect to /admin */}
+          <Route
+            path="/dashboard"
+            element={<Navigate to="/admin" replace />}
           />
 
           <Route
@@ -37,6 +43,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Placeholder routes for landing page links */}
+          <Route path="/create" element={<Navigate to="/setup" replace />} />
 
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
