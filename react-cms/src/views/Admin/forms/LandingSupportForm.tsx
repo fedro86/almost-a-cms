@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLandingPageData as useApi } from '../../../hooks/useLandingPageData';
+import { EmojiInput } from '../../../components/EmojiPicker';
 
 interface DonationOption {
-  id: string;
+  id?: string;
   emoji: string;
   text: string;
   amount: number;
@@ -32,15 +33,19 @@ interface Feature {
 interface SupportData {
   sectionTitle: string;
   sectionSubtitle: string;
+  showTitle?: boolean;
+  showSubtitle?: boolean;
   donations: {
     title: string;
     subtitle: string;
+    showSection?: boolean;
     options: DonationOption[];
     monthlySupport: MonthlySupport;
   };
   featureFunding: {
     title: string;
     subtitle: string;
+    showSection?: boolean;
     platformUrl: string;
     topFeatures: Feature[];
     viewAllUrl: string;
@@ -48,6 +53,7 @@ interface SupportData {
   transparency: {
     text: string;
     url: string;
+    showSection?: boolean;
   };
 }
 
@@ -56,11 +62,30 @@ export const LandingSupportForm: React.FC = () => {
   const [formData, setFormData] = useState<SupportData | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showDeleteConfirmDonation, setShowDeleteConfirmDonation] = useState<number | null>(null);
+  const [showDeleteConfirmFeature, setShowDeleteConfirmFeature] = useState<number | null>(null);
 
   useEffect(() => {
     loadContent('support').then((data) => {
       if (data) {
-        setFormData(data as SupportData);
+        // Ensure all show toggles default to true
+        setFormData({
+          ...data,
+          showTitle: data.showTitle !== undefined ? data.showTitle : true,
+          showSubtitle: data.showSubtitle !== undefined ? data.showSubtitle : true,
+          donations: {
+            ...data.donations,
+            showSection: data.donations?.showSection !== undefined ? data.donations.showSection : true,
+          },
+          featureFunding: {
+            ...data.featureFunding,
+            showSection: data.featureFunding?.showSection !== undefined ? data.featureFunding.showSection : true,
+          },
+          transparency: {
+            ...data.transparency,
+            showSection: data.transparency?.showSection !== undefined ? data.transparency.showSection : true,
+          }
+        } as SupportData);
       }
     });
   }, []);
@@ -90,6 +115,48 @@ export const LandingSupportForm: React.FC = () => {
     });
   };
 
+  const addDonationOption = () => {
+    if (!formData) return;
+    const newOption: DonationOption = {
+      id: `donation-${Date.now()}`,
+      emoji: '☕',
+      text: 'New Donation',
+      amount: 5,
+      url: '',
+    };
+    setFormData({
+      ...formData,
+      donations: {
+        ...formData.donations,
+        options: [...formData.donations.options, newOption]
+      }
+    });
+  };
+
+  const removeDonationOption = (index: number) => {
+    if (!formData) return;
+    const newOptions = formData.donations.options.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      donations: { ...formData.donations, options: newOptions }
+    });
+    setShowDeleteConfirmDonation(null);
+  };
+
+  const moveDonationOption = (index: number, direction: 'up' | 'down') => {
+    if (!formData) return;
+    const newOptions = [...formData.donations.options];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= newOptions.length) return;
+
+    [newOptions[index], newOptions[targetIndex]] = [newOptions[targetIndex], newOptions[index]];
+    setFormData({
+      ...formData,
+      donations: { ...formData.donations, options: newOptions }
+    });
+  };
+
   const updateFeature = (index: number, field: keyof Feature, value: string | number) => {
     if (!formData) return;
     const newFeatures = [...formData.featureFunding.topFeatures];
@@ -104,8 +171,8 @@ export const LandingSupportForm: React.FC = () => {
     if (!formData) return;
     const newFeature: Feature = {
       id: `feature-${Date.now()}`,
-      title: '',
-      description: '',
+      title: 'New Feature',
+      description: 'Describe this feature...',
       fundedAmount: 0,
       goalAmount: 500,
       contributors: 0,
@@ -125,6 +192,21 @@ export const LandingSupportForm: React.FC = () => {
   const removeFeature = (index: number) => {
     if (!formData) return;
     const newFeatures = formData.featureFunding.topFeatures.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      featureFunding: { ...formData.featureFunding, topFeatures: newFeatures }
+    });
+    setShowDeleteConfirmFeature(null);
+  };
+
+  const moveFeature = (index: number, direction: 'up' | 'down') => {
+    if (!formData) return;
+    const newFeatures = [...formData.featureFunding.topFeatures];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= newFeatures.length) return;
+
+    [newFeatures[index], newFeatures[targetIndex]] = [newFeatures[targetIndex], newFeatures[index]];
     setFormData({
       ...formData,
       featureFunding: { ...formData.featureFunding, topFeatures: newFeatures }
@@ -194,28 +276,62 @@ export const LandingSupportForm: React.FC = () => {
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8 space-y-6">
             <h2 className="text-xl font-bold text-gray-900">Section Header</h2>
 
+            {/* Title */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Section Title
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Section Title
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show Title</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showTitle ?? true}
+                      onChange={(e) => setFormData({ ...formData, showTitle: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <input
                 type="text"
                 value={formData.sectionTitle}
                 onChange={(e) => setFormData({ ...formData, sectionTitle: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg font-semibold"
+                disabled={!(formData.showTitle ?? true)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg font-semibold disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="Support AlmostaCMS"
               />
             </div>
 
+            {/* Subtitle */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Section Subtitle
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Section Subtitle
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show Subtitle</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showSubtitle ?? true}
+                      onChange={(e) => setFormData({ ...formData, showSubtitle: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <textarea
                 value={formData.sectionSubtitle}
                 onChange={(e) => setFormData({ ...formData, sectionSubtitle: e.target.value })}
+                disabled={!(formData.showSubtitle ?? true)}
                 rows={2}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="Help us build the features you want"
               />
             </div>
@@ -223,7 +339,25 @@ export const LandingSupportForm: React.FC = () => {
 
           {/* Donations Section */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8 space-y-6">
-            <h2 className="text-xl font-bold text-gray-900">One-Time Donations</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">One-Time Donations</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-sm text-gray-600">Show Section</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.donations.showSection ?? true}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      donations: { ...formData.donations, showSection: e.target.checked }
+                    })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                  <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                </div>
+              </label>
+            </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -259,85 +393,173 @@ export const LandingSupportForm: React.FC = () => {
 
             <hr className="border-gray-200" />
 
-            <h3 className="text-lg font-semibold text-gray-900">Donation Options (3)</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Donation Options ({formData.donations.options.length} {formData.donations.options.length === 1 ? 'item' : 'items'})
+              </h3>
+              <button
+                type="button"
+                onClick={addDonationOption}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add Option
+              </button>
+            </div>
 
-            {formData.donations.options.map((option, index) => (
-              <div key={option.id} className="p-4 bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg border-2 border-pink-200 space-y-3">
-                <div className="grid grid-cols-4 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Emoji
-                    </label>
-                    <input
-                      type="text"
-                      value={option.emoji}
-                      onChange={(e) => updateDonationOption(index, 'emoji', e.target.value)}
-                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white text-center text-2xl"
-                      placeholder="☕"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Text
-                    </label>
-                    <input
-                      type="text"
-                      value={option.text}
-                      onChange={(e) => updateDonationOption(index, 'text', e.target.value)}
-                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white"
-                      placeholder="Buy Me a Coffee"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Amount ($)
-                    </label>
-                    <input
-                      type="number"
-                      value={option.amount}
-                      onChange={(e) => updateDonationOption(index, 'amount', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white"
-                      placeholder="5"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    URL
-                  </label>
-                  <input
-                    type="text"
-                    value={option.url}
-                    onChange={(e) => updateDonationOption(index, 'url', e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white font-mono text-sm"
-                    placeholder="https://ko-fi.com/almostacms"
-                  />
-                </div>
+            {formData.donations.options.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-gray-600 text-lg">No donation options yet</p>
+                <p className="text-gray-500 text-sm mt-2">Click "Add Option" to create your first donation tier</p>
               </div>
-            ))}
+            ) : (
+              formData.donations.options.map((option, index) => (
+                <div key={option.id || index} className="p-6 bg-gray-50 rounded-lg border-2 border-gray-200 space-y-4">
+                  {/* Option Header with Controls */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 bg-pink-600 text-white rounded-lg flex items-center justify-center font-bold">
+                        {index + 1}
+                      </span>
+                      <h4 className="font-semibold text-gray-900">Option {index + 1}</h4>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Move Up */}
+                      <button
+                        type="button"
+                        onClick={() => moveDonationOption(index, 'up')}
+                        disabled={index === 0}
+                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        </svg>
+                      </button>
+
+                      {/* Move Down */}
+                      <button
+                        type="button"
+                        onClick={() => moveDonationOption(index, 'down')}
+                        disabled={index === formData.donations.options.length - 1}
+                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Delete */}
+                      {showDeleteConfirmDonation === index ? (
+                        <div className="flex items-center gap-2 bg-red-50 px-3 py-1 rounded-lg border border-red-200">
+                          <span className="text-sm text-red-800 font-medium">Delete?</span>
+                          <button
+                            type="button"
+                            onClick={() => removeDonationOption(index)}
+                            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded font-medium transition-all"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowDeleteConfirmDonation(null)}
+                            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs rounded font-medium transition-all"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowDeleteConfirmDonation(index)}
+                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete option"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-3">
+                    <div>
+                      <EmojiInput
+                        value={option.emoji}
+                        onChange={(emoji) => updateDonationOption(index, 'emoji', emoji)}
+                        label="Emoji"
+                        placeholder="☕"
+                        buttonColor="pink"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Text
+                      </label>
+                      <input
+                        type="text"
+                        value={option.text}
+                        onChange={(e) => updateDonationOption(index, 'text', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all"
+                        placeholder="Buy Me a Coffee"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Amount ($)
+                      </label>
+                      <input
+                        type="number"
+                        value={option.amount}
+                        onChange={(e) => updateDonationOption(index, 'amount', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all"
+                        placeholder="5"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      URL
+                    </label>
+                    <input
+                      type="text"
+                      value={option.url}
+                      onChange={(e) => updateDonationOption(index, 'url', e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all font-mono text-sm"
+                      placeholder="https://ko-fi.com/almostacms"
+                    />
+                  </div>
+                </div>
+              ))
+            )}
 
             <hr className="border-gray-200" />
 
             <h3 className="text-lg font-semibold text-gray-900">Monthly Support</h3>
 
-            <div className="p-4 bg-gradient-to-br from-red-50 to-pink-50 rounded-lg border-2 border-red-200 space-y-3">
+            <div className="p-6 bg-gray-50 rounded-lg border-2 border-gray-200 space-y-4">
               <div className="grid grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Emoji
-                  </label>
-                  <input
-                    type="text"
+                  <EmojiInput
                     value={formData.donations.monthlySupport.emoji}
-                    onChange={(e) => setFormData({
+                    onChange={(emoji) => setFormData({
                       ...formData,
                       donations: {
                         ...formData.donations,
-                        monthlySupport: { ...formData.donations.monthlySupport, emoji: e.target.value }
+                        monthlySupport: { ...formData.donations.monthlySupport, emoji }
                       }
                     })}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white text-center text-2xl"
+                    label="Emoji"
                     placeholder="❤️"
+                    buttonColor="red"
                   />
                 </div>
                 <div className="col-span-2">
@@ -400,7 +622,25 @@ export const LandingSupportForm: React.FC = () => {
 
           {/* Feature Funding Section */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8 space-y-6">
-            <h2 className="text-xl font-bold text-gray-900">Feature Funding</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Feature Funding</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-sm text-gray-600">Show Section</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.featureFunding.showSection ?? true}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      featureFunding: { ...formData.featureFunding, showSection: e.target.checked }
+                    })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                  <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                </div>
+              </label>
+            </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -472,9 +712,10 @@ export const LandingSupportForm: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">
-                Top Features ({formData.featureFunding.topFeatures.length})
+                Top Features ({formData.featureFunding.topFeatures.length} {formData.featureFunding.topFeatures.length === 1 ? 'item' : 'items'})
               </h3>
               <button
+                type="button"
                 onClick={addFeature}
                 className="px-4 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex items-center gap-2"
               >
@@ -485,19 +726,88 @@ export const LandingSupportForm: React.FC = () => {
               </button>
             </div>
 
-            {formData.featureFunding.topFeatures.map((feature, index) => (
-              <div key={feature.id} className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-gray-900">
-                    {feature.title || `Feature ${index + 1}`}
-                  </h4>
-                  <button
-                    onClick={() => removeFeature(index)}
-                    className="px-3 py-1 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                  >
-                    Remove
-                  </button>
-                </div>
+            {formData.featureFunding.topFeatures.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <p className="text-gray-600 text-lg">No features yet</p>
+                <p className="text-gray-500 text-sm mt-2">Click "Add Feature" to create your first fundable feature</p>
+              </div>
+            ) : (
+              formData.featureFunding.topFeatures.map((feature, index) => (
+                <div key={feature.id} className="p-6 bg-gray-50 rounded-lg border-2 border-gray-200 space-y-4">
+                  {/* Feature Header with Controls */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold">
+                        {index + 1}
+                      </span>
+                      <h4 className="font-semibold text-gray-900">
+                        {feature.title || `Feature ${index + 1}`}
+                      </h4>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Move Up */}
+                      <button
+                        type="button"
+                        onClick={() => moveFeature(index, 'up')}
+                        disabled={index === 0}
+                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        </svg>
+                      </button>
+
+                      {/* Move Down */}
+                      <button
+                        type="button"
+                        onClick={() => moveFeature(index, 'down')}
+                        disabled={index === formData.featureFunding.topFeatures.length - 1}
+                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Delete */}
+                      {showDeleteConfirmFeature === index ? (
+                        <div className="flex items-center gap-2 bg-red-50 px-3 py-1 rounded-lg border border-red-200">
+                          <span className="text-sm text-red-800 font-medium">Delete?</span>
+                          <button
+                            type="button"
+                            onClick={() => removeFeature(index)}
+                            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded font-medium transition-all"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowDeleteConfirmFeature(null)}
+                            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs rounded font-medium transition-all"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowDeleteConfirmFeature(index)}
+                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete feature"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -523,6 +833,26 @@ export const LandingSupportForm: React.FC = () => {
                     className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white"
                     placeholder="Step-by-step guide to connect your own domain"
                   />
+                </div>
+
+                {/* Progress Bar */}
+                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-indigo-600">
+                      ${feature.fundedAmount} / ${feature.goalAmount}
+                    </span>
+                    <span className="text-sm font-semibold text-indigo-600">
+                      {feature.goalAmount > 0 ? Math.round((feature.fundedAmount / feature.goalAmount) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${feature.goalAmount > 0 ? Math.min((feature.fundedAmount / feature.goalAmount) * 100, 100) : 0}%`
+                      }}
+                    ></div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -608,12 +938,31 @@ export const LandingSupportForm: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Transparency */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8 space-y-6">
-            <h2 className="text-xl font-bold text-gray-900">Transparency</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Transparency</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-sm text-gray-600">Show Section</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.transparency.showSection ?? true}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      transparency: { ...formData.transparency, showSection: e.target.checked }
+                    })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                  <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                </div>
+              </label>
+            </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">

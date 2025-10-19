@@ -4,6 +4,7 @@ import { PhotoIcon, FolderIcon } from '@heroicons/react/24/outline';
 import { useLandingPageData as useApi } from '../../../hooks/useLandingPageData';
 import GitHubApiService from '../../../services/github-api';
 import { useRepo } from '../../../hooks/useRepo';
+import { EmojiInput } from '../../../components/EmojiPicker';
 
 interface TrustBadge {
   text: string;
@@ -44,16 +45,11 @@ interface HeroData {
   };
 }
 
-// Common emojis for quick selection
-const COMMON_EMOJIS = ['✨', '⚡', '🚀', '💎', '🎉', '🔥', '⭐', '💡', '🎯', '🌟', '💪', '🏆', '❤️', '👍', '✅', '🎨', '📱', '💻', '🌈', '🎁'];
-
 export const LandingHeroForm: React.FC = () => {
   const { loadContent, saveContent, loading, error } = useApi();
   const [formData, setFormData] = useState<HeroData | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [showTopEmojiPicker, setShowTopEmojiPicker] = useState(false);
-  const [showBottomEmojiPicker, setShowBottomEmojiPicker] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -900,54 +896,19 @@ export const LandingHeroForm: React.FC = () => {
               {formData.floatingBadges?.topRight && (
                 <div className="grid grid-cols-3 gap-4">
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Emoji
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.floatingBadges?.topRight?.emoji || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        floatingBadges: {
-                          ...formData.floatingBadges,
-                          topRight: { ...formData.floatingBadges.topRight, emoji: e.target.value }
-                        }
-                      })}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all text-center text-2xl"
-                      placeholder="✨"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowTopEmojiPicker(!showTopEmojiPicker)}
-                      className="absolute right-2 top-2 px-2 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition-colors"
-                    >
-                      Pick
-                    </button>
-                  </div>
-                  {showTopEmojiPicker && (
-                    <div className="absolute z-10 mt-2 p-3 bg-white border-2 border-gray-300 rounded-lg shadow-xl grid grid-cols-5 gap-2">
-                      {COMMON_EMOJIS.map((emoji) => (
-                        <button
-                          key={emoji}
-                          type="button"
-                          onClick={() => {
-                            setFormData({
-                              ...formData,
-                              floatingBadges: {
-                                ...formData.floatingBadges,
-                                topRight: { ...formData.floatingBadges.topRight, emoji }
-                              }
-                            });
-                            setShowTopEmojiPicker(false);
-                          }}
-                          className="text-2xl hover:bg-gray-100 p-2 rounded transition-colors"
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <EmojiInput
+                    value={formData.floatingBadges?.topRight?.emoji || ''}
+                    onChange={(emoji) => setFormData({
+                      ...formData,
+                      floatingBadges: {
+                        ...formData.floatingBadges,
+                        topRight: { ...formData.floatingBadges.topRight, emoji }
+                      }
+                    })}
+                    label="Emoji"
+                    placeholder="✨"
+                    buttonColor="blue"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1025,54 +986,19 @@ export const LandingHeroForm: React.FC = () => {
               {formData.floatingBadges?.bottomLeft && (
                 <div className="grid grid-cols-3 gap-4">
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Emoji
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.floatingBadges?.bottomLeft?.emoji || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        floatingBadges: {
-                          ...formData.floatingBadges,
-                          bottomLeft: { ...formData.floatingBadges.bottomLeft, emoji: e.target.value }
-                        }
-                      })}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white text-center text-2xl"
-                      placeholder="⚡"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowBottomEmojiPicker(!showBottomEmojiPicker)}
-                      className="absolute right-2 top-2 px-2 py-1 text-xs bg-purple-50 hover:bg-purple-100 text-purple-600 rounded transition-colors"
-                    >
-                      Pick
-                    </button>
-                  </div>
-                  {showBottomEmojiPicker && (
-                    <div className="absolute z-10 mt-2 p-3 bg-white border-2 border-gray-300 rounded-lg shadow-xl grid grid-cols-5 gap-2">
-                      {COMMON_EMOJIS.map((emoji) => (
-                        <button
-                          key={emoji}
-                          type="button"
-                          onClick={() => {
-                            setFormData({
-                              ...formData,
-                              floatingBadges: {
-                                ...formData.floatingBadges,
-                                bottomLeft: { ...formData.floatingBadges.bottomLeft, emoji }
-                              }
-                            });
-                            setShowBottomEmojiPicker(false);
-                          }}
-                          className="text-2xl hover:bg-gray-100 p-2 rounded transition-colors"
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <EmojiInput
+                    value={formData.floatingBadges?.bottomLeft?.emoji || ''}
+                    onChange={(emoji) => setFormData({
+                      ...formData,
+                      floatingBadges: {
+                        ...formData.floatingBadges,
+                        bottomLeft: { ...formData.floatingBadges.bottomLeft, emoji }
+                      }
+                    })}
+                    label="Emoji"
+                    placeholder="⚡"
+                    buttonColor="purple"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
