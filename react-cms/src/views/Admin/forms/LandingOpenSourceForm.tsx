@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLandingPageData as useApi } from '../../../hooks/useLandingPageData';
+import { IconBrowser } from '../../../components/IconBrowser';
 
 interface CallToAction {
+  id?: string;
   icon: string;
   text: string;
   url: string;
@@ -18,8 +20,12 @@ interface Stats {
 interface OpenSourceData {
   sectionTitle: string;
   sectionSubtitle: string;
+  showTitle?: boolean;
+  showSubtitle?: boolean;
   githubUrl: string;
+  showGithubUrl?: boolean;
   stats: Stats;
+  showStats?: boolean;
   callsToAction: CallToAction[];
 }
 
@@ -28,11 +34,21 @@ export const LandingOpenSourceForm: React.FC = () => {
   const [formData, setFormData] = useState<OpenSourceData | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showIconBrowser, setShowIconBrowser] = useState(false);
+  const [selectedCTAIndex, setSelectedCTAIndex] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
   useEffect(() => {
     loadContent('openSource').then((data) => {
       if (data) {
-        setFormData(data as OpenSourceData);
+        // Ensure all show toggles default to true
+        setFormData({
+          ...data,
+          showTitle: data.showTitle !== undefined ? data.showTitle : true,
+          showSubtitle: data.showSubtitle !== undefined ? data.showSubtitle : true,
+          showGithubUrl: data.showGithubUrl !== undefined ? data.showGithubUrl : true,
+          showStats: data.showStats !== undefined ? data.showStats : true,
+        } as OpenSourceData);
       }
     });
   }, []);
@@ -56,6 +72,49 @@ export const LandingOpenSourceForm: React.FC = () => {
     if (!formData) return;
     const newCTAs = [...formData.callsToAction];
     newCTAs[index] = { ...newCTAs[index], [field]: value };
+    setFormData({ ...formData, callsToAction: newCTAs });
+  };
+
+  const handleOpenIconBrowser = (index: number) => {
+    setSelectedCTAIndex(index);
+    setShowIconBrowser(true);
+  };
+
+  const handleSelectIcon = (iconName: string) => {
+    if (selectedCTAIndex !== null) {
+      updateCTA(selectedCTAIndex, 'icon', iconName);
+    }
+  };
+
+  const addCTA = () => {
+    if (!formData) return;
+    const newCTA: CallToAction = {
+      id: `cta-${Date.now()}`,
+      icon: 'star',
+      text: 'New Action',
+      url: 'https://github.com',
+    };
+    setFormData({
+      ...formData,
+      callsToAction: [...formData.callsToAction, newCTA],
+    });
+  };
+
+  const deleteCTA = (index: number) => {
+    if (!formData) return;
+    const newCTAs = formData.callsToAction.filter((_, i) => i !== index);
+    setFormData({ ...formData, callsToAction: newCTAs });
+    setShowDeleteConfirm(null);
+  };
+
+  const moveCTA = (index: number, direction: 'up' | 'down') => {
+    if (!formData) return;
+    const newCTAs = [...formData.callsToAction];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= newCTAs.length) return;
+
+    [newCTAs[index], newCTAs[targetIndex]] = [newCTAs[targetIndex], newCTAs[index]];
     setFormData({ ...formData, callsToAction: newCTAs });
   };
 
@@ -118,43 +177,98 @@ export const LandingOpenSourceForm: React.FC = () => {
 
         {/* Form */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8 space-y-8">
-          {/* Section Header */}
+          {/* Section Header with Visibility Toggles */}
           <div className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Section Header</h3>
+            </div>
+
+            {/* Title */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Section Title
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Section Title
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show Title</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showTitle ?? true}
+                      onChange={(e) => setFormData({ ...formData, showTitle: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <input
                 type="text"
                 value={formData.sectionTitle}
                 onChange={(e) => setFormData({ ...formData, sectionTitle: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg font-semibold"
+                disabled={!(formData.showTitle ?? true)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg font-semibold disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="Free & Open Source Forever"
               />
             </div>
 
+            {/* Subtitle */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Section Subtitle
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Section Subtitle
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show Subtitle</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showSubtitle ?? true}
+                      onChange={(e) => setFormData({ ...formData, showSubtitle: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <textarea
                 value={formData.sectionSubtitle}
                 onChange={(e) => setFormData({ ...formData, sectionSubtitle: e.target.value })}
+                disabled={!(formData.showSubtitle ?? true)}
                 rows={2}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="MIT Licensed, community-driven development"
               />
             </div>
 
+            {/* GitHub URL */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                GitHub Repository URL
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  GitHub Repository URL
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show URL</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showGithubUrl ?? true}
+                      onChange={(e) => setFormData({ ...formData, showGithubUrl: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <input
                 type="text"
                 value={formData.githubUrl}
                 onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all font-mono text-sm"
+                disabled={!(formData.showGithubUrl ?? true)}
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all font-mono text-sm disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="https://github.com/username/repo"
               />
             </div>
@@ -164,9 +278,24 @@ export const LandingOpenSourceForm: React.FC = () => {
 
           {/* GitHub Stats */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              GitHub Statistics
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                GitHub Statistics
+              </h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-sm text-gray-600">Show Statistics</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.showStats ?? true}
+                    onChange={(e) => setFormData({ ...formData, showStats: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                  <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                </div>
+              </label>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -179,7 +308,8 @@ export const LandingOpenSourceForm: React.FC = () => {
                     ...formData,
                     stats: { ...formData.stats, stars: parseInt(e.target.value) || 0 }
                   })}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all"
+                  disabled={!(formData.showStats ?? true)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -195,7 +325,8 @@ export const LandingOpenSourceForm: React.FC = () => {
                     ...formData,
                     stats: { ...formData.stats, forks: parseInt(e.target.value) || 0 }
                   })}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all"
+                  disabled={!(formData.showStats ?? true)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -211,7 +342,8 @@ export const LandingOpenSourceForm: React.FC = () => {
                     ...formData,
                     stats: { ...formData.stats, contributors: parseInt(e.target.value) || 0 }
                   })}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all"
+                  disabled={!(formData.showStats ?? true)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                   placeholder="1"
                 />
               </div>
@@ -227,7 +359,8 @@ export const LandingOpenSourceForm: React.FC = () => {
                     ...formData,
                     stats: { ...formData.stats, lastUpdated: e.target.value }
                   })}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all"
+                  disabled={!(formData.showStats ?? true)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                 />
               </div>
             </div>
@@ -237,62 +370,162 @@ export const LandingOpenSourceForm: React.FC = () => {
 
           {/* Calls to Action */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Contribution CTAs (4 items)
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Contribution CTAs ({formData.callsToAction.length} {formData.callsToAction.length === 1 ? 'item' : 'items'})
+              </h3>
+              <button
+                type="button"
+                onClick={addCTA}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add CTA
+              </button>
+            </div>
 
-            {formData.callsToAction.map((cta, index) => (
-              <div key={index} className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border-2 border-blue-200 space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
-                    {index + 1}
-                  </span>
-                  <h4 className="font-semibold text-gray-900">CTA {index + 1}</h4>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Icon Name
-                  </label>
-                  <input
-                    type="text"
-                    value={cta.icon}
-                    onChange={(e) => updateCTA(index, 'icon', e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white font-mono text-sm"
-                    placeholder="star"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Icon identifier (e.g., star, code-bracket, book-open, light-bulb)
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Button Text
-                  </label>
-                  <input
-                    type="text"
-                    value={cta.text}
-                    onChange={(e) => updateCTA(index, 'text', e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white"
-                    placeholder="Star us on GitHub"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Button URL
-                  </label>
-                  <input
-                    type="text"
-                    value={cta.url}
-                    onChange={(e) => updateCTA(index, 'url', e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all bg-white font-mono text-sm"
-                    placeholder="https://github.com/username/repo"
-                  />
-                </div>
+            {formData.callsToAction.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <p className="text-gray-600 text-lg">No CTAs yet</p>
+                <p className="text-gray-500 text-sm mt-2">Click "Add CTA" to create your first call-to-action</p>
               </div>
-            ))}
+            ) : (
+              formData.callsToAction.map((cta, index) => (
+                <div key={cta.id || index} className="p-6 bg-gray-50 rounded-lg border-2 border-gray-200 space-y-4 relative">
+                  {/* CTA Header with Controls */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
+                        {index + 1}
+                      </span>
+                      <h4 className="font-semibold text-gray-900">CTA {index + 1}</h4>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Move Up */}
+                      <button
+                        type="button"
+                        onClick={() => moveCTA(index, 'up')}
+                        disabled={index === 0}
+                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        </svg>
+                      </button>
+
+                      {/* Move Down */}
+                      <button
+                        type="button"
+                        onClick={() => moveCTA(index, 'down')}
+                        disabled={index === formData.callsToAction.length - 1}
+                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Delete */}
+                      {showDeleteConfirm === index ? (
+                        <div className="flex items-center gap-2 bg-red-50 px-3 py-1 rounded-lg border border-red-200">
+                          <span className="text-sm text-red-800 font-medium">Delete?</span>
+                          <button
+                            type="button"
+                            onClick={() => deleteCTA(index)}
+                            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded font-medium transition-all"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs rounded font-medium transition-all"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowDeleteConfirm(index)}
+                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete CTA"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Icon Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Icon Name
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={cta.icon}
+                        onChange={(e) => updateCTA(index, 'icon', e.target.value)}
+                        className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all font-mono text-sm"
+                        placeholder="star"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleOpenIconBrowser(index)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Browse Icons
+                      </button>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Enter icon name or click "Browse Icons" to see all available Heroicons
+                    </p>
+                  </div>
+
+                  {/* Button Text */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Button Text
+                    </label>
+                    <input
+                      type="text"
+                      value={cta.text}
+                      onChange={(e) => updateCTA(index, 'text', e.target.value)}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all"
+                      placeholder="Star us on GitHub"
+                    />
+                  </div>
+
+                  {/* Button URL */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Button URL
+                    </label>
+                    <input
+                      type="text"
+                      value={cta.url}
+                      onChange={(e) => updateCTA(index, 'url', e.target.value)}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all font-mono text-sm"
+                      placeholder="https://github.com/username/repo"
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -342,6 +575,14 @@ export const LandingOpenSourceForm: React.FC = () => {
             Preview changes on live site
           </a>
         </div>
+
+        {/* Icon Browser Modal */}
+        <IconBrowser
+          isOpen={showIconBrowser}
+          onClose={() => setShowIconBrowser(false)}
+          onSelectIcon={handleSelectIcon}
+          currentIcon={selectedCTAIndex !== null ? formData.callsToAction[selectedCTAIndex]?.icon : ''}
+        />
       </div>
     </div>
   );

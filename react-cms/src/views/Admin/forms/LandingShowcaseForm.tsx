@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLandingPageData as useApi } from '../../../hooks/useLandingPageData';
+import { ImageUpload } from '../../../components/ImageUpload';
 
 interface ShowcaseSite {
   id: string;
@@ -15,6 +16,8 @@ interface ShowcaseSite {
 interface ShowcaseData {
   sectionTitle: string;
   sectionSubtitle: string;
+  showTitle?: boolean;
+  showSubtitle?: boolean;
   sites: ShowcaseSite[];
 }
 
@@ -27,7 +30,12 @@ export const LandingShowcaseForm: React.FC = () => {
   useEffect(() => {
     loadContent('showcase').then((data) => {
       if (data) {
-        setFormData(data as ShowcaseData);
+        // Ensure showTitle and showSubtitle default to true
+        setFormData({
+          ...data,
+          showTitle: data.showTitle !== undefined ? data.showTitle : true,
+          showSubtitle: data.showSubtitle !== undefined ? data.showSubtitle : true,
+        } as ShowcaseData);
       }
     });
   }, []);
@@ -133,30 +141,68 @@ export const LandingShowcaseForm: React.FC = () => {
 
         {/* Form */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8 space-y-8">
-          {/* Section Header */}
+          {/* Section Header with Visibility Toggles */}
           <div className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Section Header</h3>
+            </div>
+
+            {/* Title */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Section Title
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Section Title
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show Title</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showTitle ?? true}
+                      onChange={(e) => setFormData({ ...formData, showTitle: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <input
                 type="text"
                 value={formData.sectionTitle}
                 onChange={(e) => setFormData({ ...formData, sectionTitle: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg font-semibold"
+                disabled={!(formData.showTitle ?? true)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg font-semibold disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="Built with AlmostaCMS"
               />
             </div>
 
+            {/* Subtitle */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Section Subtitle
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Section Subtitle
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show Subtitle</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showSubtitle ?? true}
+                      onChange={(e) => setFormData({ ...formData, showSubtitle: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <textarea
                 value={formData.sectionSubtitle}
                 onChange={(e) => setFormData({ ...formData, sectionSubtitle: e.target.value })}
+                disabled={!(formData.showSubtitle ?? true)}
                 rows={2}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="Real websites created by our users"
               />
             </div>
@@ -247,19 +293,13 @@ export const LandingShowcaseForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Screenshot Path
-                  </label>
-                  <input
-                    type="text"
+                  <ImageUpload
                     value={site.screenshot}
-                    onChange={(e) => updateSite(index, 'screenshot', e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 transition-all font-mono text-sm"
+                    onChange={(path) => updateSite(index, 'screenshot', path)}
+                    label="Screenshot"
                     placeholder="./assets/images/showcase/site.png"
+                    showPreview={true}
                   />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Relative path to screenshot image
-                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
