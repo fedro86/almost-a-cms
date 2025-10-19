@@ -18,6 +18,8 @@ interface Feature {
 interface FeaturesData {
   sectionTitle: string;
   sectionSubtitle: string;
+  showTitle?: boolean;
+  showSubtitle?: boolean;
   features: Feature[];
 }
 
@@ -46,14 +48,20 @@ export const FeaturesSection: React.FC = () => {
     <section id="features" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            {data.sectionTitle}
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {data.sectionSubtitle}
-          </p>
-        </div>
+        {((data.showTitle ?? true) || (data.showSubtitle ?? true)) && (
+          <div className="text-center mb-16">
+            {(data.showTitle ?? true) && (
+              <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+                {data.sectionTitle}
+              </h2>
+            )}
+            {(data.showSubtitle ?? true) && (
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                {data.sectionSubtitle}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
