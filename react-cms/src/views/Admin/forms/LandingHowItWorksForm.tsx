@@ -11,6 +11,7 @@ interface Step {
 }
 
 interface HowItWorksData {
+  showSection?: boolean;
   sectionTitle: string;
   sectionSubtitle: string;
   showTitle?: boolean;
@@ -32,9 +33,10 @@ export const LandingHowItWorksForm: React.FC = () => {
   useEffect(() => {
     loadContent('howItWorks').then((data) => {
       if (data) {
-        // Ensure showTitle and showSubtitle default to true
+        // Ensure showSection, showTitle and showSubtitle default to true
         setFormData({
           ...data,
+          showSection: data.showSection !== undefined ? data.showSection : true,
           showTitle: data.showTitle !== undefined ? data.showTitle : true,
           showSubtitle: data.showSubtitle !== undefined ? data.showSubtitle : true,
         } as HowItWorksData);
@@ -142,6 +144,22 @@ export const LandingHowItWorksForm: React.FC = () => {
               <p className="text-gray-600">
                 Manage your step-by-step process with icons and descriptions
               </p>
+            </div>
+            <div className="flex items-center gap-4">
+              {/* Section Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <span className="text-sm font-medium text-gray-700">Show Section</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.showSection ?? true}
+                    onChange={(e) => setFormData({ ...formData, showSection: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-14 h-7 bg-gray-300 rounded-full peer peer-checked:bg-green-600 peer-focus:ring-2 peer-focus:ring-green-200 transition-colors"></div>
+                  <div className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-7 shadow-md"></div>
+                </div>
+              </label>
             </div>
           </div>
         </div>

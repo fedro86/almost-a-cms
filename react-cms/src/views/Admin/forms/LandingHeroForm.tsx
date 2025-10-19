@@ -24,6 +24,7 @@ interface RepoImage {
 }
 
 interface HeroData {
+  showSection?: boolean;
   headline: string;
   subheadline: string;
   ctaPrimary: {
@@ -69,7 +70,10 @@ export const LandingHeroForm: React.FC = () => {
     // Load hero data
     loadContent('hero').then((data) => {
       if (data) {
-        setFormData(data as HeroData);
+        setFormData({
+          ...data,
+          showSection: data.showSection !== undefined ? data.showSection : true,
+        } as HeroData);
       }
     });
   }, []);
@@ -332,29 +336,46 @@ export const LandingHeroForm: React.FC = () => {
               </p>
             </div>
 
-            {/* Top Save Button */}
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {saving ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Save Changes
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-4">
+              {/* Section Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <span className="text-sm font-medium text-gray-700">Show Section</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.showSection ?? true}
+                    onChange={(e) => setFormData({ ...formData, showSection: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-14 h-7 bg-gray-300 rounded-full peer peer-checked:bg-green-600 peer-focus:ring-2 peer-focus:ring-green-200 transition-colors"></div>
+                  <div className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-7 shadow-md"></div>
+                </div>
+              </label>
+
+              {/* Top Save Button */}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

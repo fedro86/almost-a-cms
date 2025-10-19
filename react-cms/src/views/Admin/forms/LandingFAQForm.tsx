@@ -9,8 +9,11 @@ interface Question {
 }
 
 interface FAQData {
+  showSection?: boolean;
   sectionTitle: string;
   sectionSubtitle: string;
+  showTitle?: boolean;
+  showSubtitle?: boolean;
   questions: Question[];
 }
 
@@ -19,11 +22,18 @@ export const LandingFAQForm: React.FC = () => {
   const [formData, setFormData] = useState<FAQData | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
   useEffect(() => {
     loadContent('faq').then((data) => {
       if (data) {
-        setFormData(data as FAQData);
+        // Ensure all show toggles default to true
+        setFormData({
+          ...data,
+          showSection: data.showSection !== undefined ? data.showSection : true,
+          showTitle: data.showTitle !== undefined ? data.showTitle : true,
+          showSubtitle: data.showSubtitle !== undefined ? data.showSubtitle : true,
+        } as FAQData);
       }
     });
   }, []);
@@ -64,6 +74,7 @@ export const LandingFAQForm: React.FC = () => {
     if (!formData) return;
     const newQuestions = formData.questions.filter((_, i) => i !== index);
     setFormData({ ...formData, questions: newQuestions });
+    setShowDeleteConfirm(null);
   };
 
   const moveQuestionUp = (index: number) => {
@@ -103,12 +114,32 @@ export const LandingFAQForm: React.FC = () => {
             Back to Sections
           </Link>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Edit FAQ Section
-          </h1>
-          <p className="text-gray-600">
-            Frequently asked questions
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Edit FAQ Section
+              </h1>
+              <p className="text-gray-600">
+                Frequently asked questions
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              {/* Section Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <span className="text-sm font-medium text-gray-700">Show Section</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.showSection ?? true}
+                    onChange={(e) => setFormData({ ...formData, showSection: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-14 h-7 bg-gray-300 rounded-full peer peer-checked:bg-green-600 peer-focus:ring-2 peer-focus:ring-green-200 transition-colors"></div>
+                  <div className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-7 shadow-md"></div>
+                </div>
+              </label>
+            </div>
+          </div>
         </div>
 
         {/* Save Success Message */}
@@ -139,30 +170,68 @@ export const LandingFAQForm: React.FC = () => {
 
         {/* Form */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8 space-y-8">
-          {/* Section Header */}
+          {/* Section Header with Visibility Toggles */}
           <div className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Section Header</h3>
+            </div>
+
+            {/* Title */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Section Title
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Section Title
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show Title</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showTitle ?? true}
+                      onChange={(e) => setFormData({ ...formData, showTitle: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <input
                 type="text"
                 value={formData.sectionTitle}
                 onChange={(e) => setFormData({ ...formData, sectionTitle: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg font-semibold"
+                disabled={!(formData.showTitle ?? true)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-lg font-semibold disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="Frequently Asked Questions"
               />
             </div>
 
+            {/* Subtitle */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Section Subtitle
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Section Subtitle
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-sm text-gray-600">Show Subtitle</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={formData.showSubtitle ?? true}
+                      onChange={(e) => setFormData({ ...formData, showSubtitle: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-200 transition-colors"></div>
+                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
               <textarea
                 value={formData.sectionSubtitle}
                 onChange={(e) => setFormData({ ...formData, sectionSubtitle: e.target.value })}
+                disabled={!(formData.showSubtitle ?? true)}
                 rows={2}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all disabled:bg-gray-100 disabled:text-gray-500"
                 placeholder="Everything you need to know about AlmostaCMS"
               />
             </div>
@@ -201,33 +270,59 @@ export const LandingFAQForm: React.FC = () => {
                   <div className="flex items-center gap-2">
                     {/* Move Up Button */}
                     <button
+                      type="button"
                       onClick={() => moveQuestionUp(index)}
                       disabled={index === 0}
-                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                       title="Move up"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                       </svg>
                     </button>
                     {/* Move Down Button */}
                     <button
+                      type="button"
                       onClick={() => moveQuestionDown(index)}
                       disabled={index === formData.questions.length - 1}
-                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                       title="Move down"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
-                    {/* Remove Button */}
-                    <button
-                      onClick={() => removeQuestion(index)}
-                      className="px-3 py-1 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                    >
-                      Remove
-                    </button>
+                    {/* Delete with Confirmation */}
+                    {showDeleteConfirm === index ? (
+                      <div className="flex items-center gap-2 bg-red-50 px-3 py-1 rounded-lg border border-red-200">
+                        <span className="text-sm text-red-800 font-medium">Delete?</span>
+                        <button
+                          type="button"
+                          onClick={() => removeQuestion(index)}
+                          className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded font-medium transition-all"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowDeleteConfirm(null)}
+                          className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs rounded font-medium transition-all"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteConfirm(index)}
+                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                        title="Delete question"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </div>
 
