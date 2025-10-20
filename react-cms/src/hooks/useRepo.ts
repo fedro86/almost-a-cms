@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import RepoContextService from '../services/repo-context';
 
 /**
  * Repository information
@@ -17,22 +18,54 @@ const STORAGE_KEY = 'almostacms_active_repo';
 /**
  * Custom hook for managing active repository state
  * Handles loading, storing, and updating the active repository
+ *
+ * In embedded mode, automatically detects repo from URL/config
+ * In centralized mode, uses localStorage selection
  */
 export function useRepo() {
   const [activeRepo, setActiveRepo] = useState<RepoInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEmbedded, setIsEmbedded] = useState(false);
 
-  // Load active repo from localStorage on mount
+  // Load active repo on mount
   useEffect(() => {
-    const loadActiveRepo = () => {
+    const loadActiveRepo = async () => {
       try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const repo = JSON.parse(stored);
-          setActiveRepo(repo);
+        // Check if we're in embedded mode
+        const embedded = RepoContextService.isEmbeddedMode();
+        setIsEmbedded(embedded);
+
+        if (embedded) {
+          // Embedded mode: Auto-detect from URL/config
+          console.log('[useRepo] Embedded mode detected - auto-detecting repository...');
+          const context = await RepoContextService.detectContext();
+
+          if (context) {
+            const repo: RepoInfo = {
+              owner: context.owner,
+              name: context.repo,
+              fullName: `${context.owner}/${context.repo}`,
+              url: `https://github.com/${context.owner}/${context.repo}`,
+              hasPages: true, // Assume Pages enabled since admin is accessible
+              pagesUrl: `https://${context.owner}.github.io${context.deployPath}`,
+            };
+            setActiveRepo(repo);
+            console.log('[useRepo] Repository auto-detected:', repo);
+          } else {
+            console.warn('[useRepo] Could not auto-detect repository context');
+          }
+        } else {
+          // Centralized mode: Load from localStorage
+          console.log('[useRepo] Centralized mode - loading from localStorage...');
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            const repo = JSON.parse(stored);
+            setActiveRepo(repo);
+            console.log('[useRepo] Repository loaded from storage:', repo);
+          }
         }
       } catch (error) {
-        console.error('Failed to load active repo:', error);
+        console.error('[useRepo] Failed to load active repo:', error);
       } finally {
         setLoading(false);
       }
@@ -86,6 +119,7 @@ export function useRepo() {
     clearRepo,
     updatePagesUrl,
     hasActiveRepo: activeRepo !== null,
+    isEmbedded, // True if admin is embedded in a site, false if centralized
   };
 }
 

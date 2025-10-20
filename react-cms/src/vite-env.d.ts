@@ -13,3 +13,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// Global variables defined by vite
+declare const __IS_EMBEDDED__: boolean;

@@ -61,4 +61,8 @@ Thumbs.db
 # React/Vite specific
 react-cms/node_modules/
 react-cms/dist/
+react-cms/dist-embed/
 react-cms/.env*
+
+# Admin bundle (build artifact)
+admin-bundle/
