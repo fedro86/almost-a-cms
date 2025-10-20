@@ -7,9 +7,9 @@ This document describes the `.almostacms.json` configuration file used to identi
 The `.almostacms.json` file serves multiple purposes:
 
 1. **Project Identification** - Marks a repository as an AlmostaCMS project
-2. **Project Metadata** - Stores project type, version, creation date
-3. **Configuration** - Stores project-specific settings
-4. **Discovery** - Enables automatic detection of user's existing projects
+2. **Deployment Configuration** - Defines where the site and admin are deployed
+3. **Project Metadata** - Stores project type, version, creation date
+4. **Feature Flags** - Controls which premium features are enabled
 
 ## File Location
 
@@ -56,6 +56,10 @@ my-portfolio/
 | `projectType` | string | Yes | `"personal-website"` or `"landing-page"` |
 | `created` | string | Yes | ISO 8601 timestamp of project creation |
 | `lastModified` | string | Yes | ISO 8601 timestamp of last modification |
+| `deployment` | object | Yes | Deployment configuration |
+| `deployment.path` | string | Yes | Deployment path: `"/"` or `"/docs"` |
+| `deployment.adminPath` | string | Yes | Admin path (usually `"/admin"` or `"/docs/admin"`) |
+| `deployment.githubPages` | object | Yes | GitHub Pages configuration |
 | `config` | object | Yes | Project configuration |
 | `config.template` | string | Yes | Template name used |
 | `config.templateVersion` | string | Yes | Template version (semver) |
@@ -66,6 +70,9 @@ my-portfolio/
 | `metadata.description` | string | No | Project description |
 | `metadata.author` | string | No | Author name |
 | `metadata.tags` | string[] | No | Project tags |
+| `features` | object | No | Feature flags (premium features) |
+| `features.payments` | boolean | No | Payment integration enabled (premium) |
+| `features.analytics` | boolean | No | Analytics integration enabled (premium) |
 
 ## Project Types
 

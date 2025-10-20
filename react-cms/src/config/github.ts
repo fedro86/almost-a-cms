@@ -1,27 +1,31 @@
 /**
- * GitHub OAuth Configuration
+ * GitHub Device Flow Configuration
  *
- * To set up GitHub OAuth:
+ * To set up GitHub Device Flow:
  * 1. Go to https://github.com/settings/developers
- * 2. Click "New OAuth App"
+ * 2. Click "New OAuth App" (or edit existing)
  * 3. Fill in:
  *    - Application name: AlmostaCMS (or your choice)
  *    - Homepage URL: http://localhost:3000 (for dev) or https://almostacms.com (for prod)
- *    - Authorization callback URL: http://localhost:3000/auth/callback (for dev)
- * 4. Copy the Client ID to .env file
+ *    - Authorization callback URL: Not needed for Device Flow, but set to http://localhost:3000 for compatibility
+ * 4. Enable "Device Flow" in your OAuth App settings
+ * 5. Copy the Client ID to .env file
+ *
+ * Device Flow Benefits:
+ * - No backend server required (zero infrastructure cost)
+ * - No client secret exposure (more secure)
+ * - Works with decentralized architecture
+ * - Better for CLI and embedded scenarios
  */
 
 export const GITHUB_CONFIG = {
   // OAuth App Client ID (public, safe to expose)
   clientId: import.meta.env.VITE_GITHUB_CLIENT_ID || '',
 
-  // Redirect URI (must match GitHub OAuth App settings)
-  redirectUri: import.meta.env.VITE_OAUTH_REDIRECT_URI || 'http://localhost:3000/auth/callback',
-
-  // OAuth scopes required
+  // OAuth scopes required for repository management
   scopes: ['repo', 'workflow'] as const,
 
-  // Template repository for new portfolios
+  // Template repositories for site generation
   templateOwner: import.meta.env.VITE_TEMPLATE_OWNER || 'almostacms',
   templateRepo: import.meta.env.VITE_TEMPLATE_REPO || 'vcard-portfolio-template',
 
@@ -31,11 +35,9 @@ export const GITHUB_CONFIG = {
   // GitHub API base URL
   apiBaseUrl: 'https://api.github.com',
 
-  // OAuth authorize URL
+  // Legacy OAuth URLs (kept for backwards compatibility, not used with Device Flow)
   authorizeUrl: 'https://github.com/login/oauth/authorize',
-
-  // Note: Client secret should NEVER be in frontend code
-  // For production, use Cloudflare Workers or similar to exchange tokens
+  redirectUri: import.meta.env.VITE_OAUTH_REDIRECT_URI || 'http://localhost:3000/auth/callback',
 };
 
 /**

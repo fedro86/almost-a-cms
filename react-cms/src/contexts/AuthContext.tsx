@@ -88,13 +88,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Fetch fresh user info from GitHub
       const result = await GitHubApiService.getAuthenticatedUser();
 
-      if (result.success && result.data) {
+      if (result.success && 'data' in result && result.data) {
         setUser(result.data as User);
         setIsAuthenticated(true);
         setError(null);
       } else {
         // Token is invalid or expired
-        console.error('Failed to fetch user:', result.error);
+        const errorMsg = 'error' in result ? result.error : 'Unknown error';
+        console.error('Failed to fetch user:', errorMsg);
         handleAuthFailure();
       }
     } catch (err: any) {
@@ -116,10 +117,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   /**
    * Initiate login flow
+   * Uses GitHub Device Flow for decentralized authentication
    */
   const login = () => {
     try {
-      AuthService.login();
+      // Redirect to device flow login page
+      window.location.href = '/auth/device-flow';
     } catch (err: any) {
       setError(err.message);
       console.error('Login error:', err);
@@ -146,11 +149,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const result = await GitHubApiService.getAuthenticatedUser();
 
-      if (result.success && result.data) {
+      if (result.success && 'data' in result && result.data) {
         setUser(result.data as User);
         setError(null);
       } else {
-        setError(result.error || 'Failed to refresh user data');
+        const errorMsg = 'error' in result ? result.error : 'Failed to refresh user data';
+        setError(errorMsg);
       }
     } catch (err: any) {
       setError(err.message);

@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'github_access_token',
   TOKEN_EXPIRY: 'token_expiry',
   OAUTH_STATE: 'oauth_state',
+  DEVICE_FLOW_STATE: 'device_flow_state',
 
   // User data (cached)
   USER_INFO: 'user_info',

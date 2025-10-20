@@ -161,6 +161,36 @@ class TokenStorage {
   }
 
   /**
+   * Store device flow state
+   */
+  static setDeviceFlowState(state: any): void {
+    sessionStorage.setItem(STORAGE_KEYS.DEVICE_FLOW_STATE, JSON.stringify(state));
+  }
+
+  /**
+   * Retrieve device flow state
+   */
+  static getDeviceFlowState(): any | null {
+    const stateData = sessionStorage.getItem(STORAGE_KEYS.DEVICE_FLOW_STATE);
+
+    if (!stateData) return null;
+
+    try {
+      return JSON.parse(stateData);
+    } catch (error) {
+      console.error('Failed to parse device flow state:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear device flow state
+   */
+  static clearDeviceFlowState(): void {
+    sessionStorage.removeItem(STORAGE_KEYS.DEVICE_FLOW_STATE);
+  }
+
+  /**
    * Get storage mechanism (sessionStorage vs localStorage)
    * For now, using sessionStorage for better security
    * Can be made configurable later

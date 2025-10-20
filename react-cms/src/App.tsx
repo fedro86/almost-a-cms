@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { LandingPage } from './views/Public/LandingPage';
 import { AuthCallback } from './components/auth/AuthCallback';
+import { DeviceFlowLogin } from './components/auth/DeviceFlowLogin';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardWrapper } from './pages/DashboardWrapper';
 import { FirstTimeSetup } from './components/setup/FirstTimeSetup';
@@ -15,6 +16,7 @@ import { LandingSupportForm } from './views/Admin/forms/LandingSupportForm';
 import { LandingFAQForm } from './views/Admin/forms/LandingFAQForm';
 import { LandingFooterForm } from './views/Admin/forms/LandingFooterForm';
 import ProjectDashboard from './components/dashboard/ProjectDashboard';
+import { PersonalWebsiteEditor } from './views/Admin/PersonalWebsiteEditor';
 
 /**
  * Main Application Component
@@ -27,7 +29,10 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
+
+          {/* Authentication Routes */}
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/auth/device-flow" element={<DeviceFlowLogin />} />
 
           {/* Protected Routes - Project Selection */}
           <Route
@@ -70,6 +75,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <LandingPageEditor />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin - Personal Website Editor */}
+          <Route
+            path="/admin/personal-website"
+            element={
+              <ProtectedRoute>
+                <PersonalWebsiteEditor />
               </ProtectedRoute>
             }
           />
