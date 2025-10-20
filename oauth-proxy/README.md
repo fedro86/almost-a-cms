@@ -1,10 +1,23 @@
-# OAuth Proxy Server (Development Only)
+# OAuth Proxy Server - DEPRECATED
 
-This is a simple Node.js server that handles GitHub OAuth token exchange for local development.
+> **⚠️ DEPRECATED:** This OAuth proxy is no longer needed. AlmostaCMS now uses **GitHub Device Flow** authentication which requires no backend server.
+>
+> **See [DEPRECATED.md](./DEPRECATED.md) for migration instructions.**
 
-**⚠️ WARNING:** This server is for **development only**. Do not use in production!
+---
 
-For production, use Cloudflare Workers or another serverless solution.
+## Why This Exists (Historical)
+
+This was a simple Node.js server that handled GitHub OAuth token exchange for local development.
+
+**⚠️ DO NOT USE:** This is deprecated and scheduled for removal.
+
+**Use Device Flow instead:** See [../docs/DEVICE_FLOW_SETUP.md](../docs/DEVICE_FLOW_SETUP.md)
+
+---
+
+<details>
+<summary><strong>📜 Historical Documentation (Click to expand)</strong></summary>
 
 ---
 
@@ -226,3 +239,4 @@ Benefits:
 - `.env.example` - Template for environment variables
 - `.gitignore` - Ensures secrets aren't committed
 - `README.md` - This file
+</details>

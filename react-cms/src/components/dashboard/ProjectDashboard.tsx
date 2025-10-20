@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import githubApi from '../../services/github-api';
 import TokenStorage from '../../utils/tokenStorage';
+import { DecentralizedMigrationBanner } from '../common/DecentralizedMigrationBanner';
 
 interface AlmostaCMSProject {
   repo: {
@@ -189,6 +190,9 @@ export default function ProjectDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {/* Migration Banner */}
+        <DecentralizedMigrationBanner />
+
         {/* Projects Header */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
