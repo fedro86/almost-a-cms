@@ -11,8 +11,9 @@
 interface RepoContext {
   owner: string;
   repo: string;
-  deployPath: string;
-  adminPath: string;
+  deployPath: string;        // URL path where site is served: "/" or "/repo-name/"
+  adminPath: string;          // URL path where admin is served: "/admin/" or "/repo-name/admin/"
+  repoPath: string;           // Repository path where files are located: "/" or "/docs/"
   detectionMethod: 'url' | 'config' | 'localStorage' | 'manual';
 }
 
@@ -22,18 +23,24 @@ interface AlmostaCMSConfig {
     repo: string;
   };
   deployment?: {
-    path: string;
-    adminPath: string;
+    path: string;             // URL serving path: "/" or "/repo-name/"
+    adminPath: string;        // Admin URL path: "/admin/" or "/repo-name/admin/"
+    source?: {
+      branch: string;         // GitHub Pages source branch (usually "main")
+      path: '/' | '/docs';    // Repository path: "/" for root, "/docs" for docs folder
+    };
     url?: string;
   };
 }
 
 export class RepoContextService {
   private static readonly STORAGE_KEY = 'almostacms_repo_context';
+
+  // Try multiple config paths to support different deployment modes
   private static readonly CONFIG_PATHS = [
-    '/.almostacms.json',
-    '/data/.almostacms.json',
-    '/../.almostacms.json',
+    '/.almostacms.json',           // Root deployment
+    '/data/.almostacms.json',      // Root deployment with data folder
+    '/../.almostacms.json',        // Admin trying to reach parent
   ];
 
   /**
@@ -97,6 +104,7 @@ export class RepoContextService {
           repo: repo,
           deployPath: `/${repo}/`,
           adminPath: `/${repo}/admin/`,
+          repoPath: '/', // Default to root, config will override if /docs
           detectionMethod: 'url',
         };
       } else {
@@ -106,6 +114,7 @@ export class RepoContextService {
           repo: `${username}.github.io`,
           deployPath: '/',
           adminPath: '/admin/',
+          repoPath: '/', // Default to root, config will override if /docs
           detectionMethod: 'url',
         };
       }
@@ -138,11 +147,15 @@ export class RepoContextService {
         const config: AlmostaCMSConfig = await response.json();
 
         if (config.github?.owner && config.github?.repo) {
+          // Get repoPath from deployment.source.path (defaults to root)
+          const repoPath = config.deployment?.source?.path || '/';
+
           return {
             owner: config.github.owner,
             repo: config.github.repo,
             deployPath: config.deployment?.path || '/',
             adminPath: config.deployment?.adminPath || '/admin/',
+            repoPath: repoPath,
             detectionMethod: 'config',
           };
         }
@@ -167,6 +180,10 @@ export class RepoContextService {
 
       // Validate stored context
       if (context.owner && context.repo && context.deployPath && context.adminPath) {
+        // Add repoPath if missing (for backward compatibility)
+        if (!context.repoPath) {
+          context.repoPath = '/';
+        }
         return context;
       }
     } catch (error) {
@@ -191,13 +208,22 @@ export class RepoContextService {
   /**
    * Manually set repository context
    * Used when auto-detection fails or user wants to override
+   *
+   * @param repoPath - Repository path where files are located: "/" for root, "/docs" for docs folder
    */
-  static setContext(owner: string, repo: string, deployPath: string = '/', adminPath: string = '/admin/'): RepoContext {
+  static setContext(
+    owner: string,
+    repo: string,
+    deployPath: string = '/',
+    adminPath: string = '/admin/',
+    repoPath: string = '/'
+  ): RepoContext {
     const context: RepoContext = {
       owner,
       repo,
       deployPath,
       adminPath,
+      repoPath,
       detectionMethod: 'manual',
     };
 

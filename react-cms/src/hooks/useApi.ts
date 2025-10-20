@@ -16,6 +16,7 @@ export const useApi = () => {
   /**
    * Load content from GitHub repository
    * Reads the JSON file from data/ folder in the active repo
+   * Supports both root (/) and docs (/docs) deployment paths
    */
   const loadContent = useCallback(async (filename: string): Promise<ContentData | null> => {
     setLoading(true);
@@ -28,9 +29,12 @@ export const useApi = () => {
       }
 
       // Construct file path in GitHub repo
-      const filePath = `data/${filename}.json`;
+      // If repoPath is "/docs", prepend "docs/" to the path
+      const repoPath = activeRepo.repoPath || '/';
+      const basePath = repoPath === '/docs' ? 'docs/' : '';
+      const filePath = `${basePath}data/${filename}.json`;
 
-      console.log(`Loading ${filePath} from ${activeRepo.owner}/${activeRepo.name}`);
+      console.log(`Loading ${filePath} from ${activeRepo.owner}/${activeRepo.name} (repoPath: ${repoPath})`);
 
       // Fetch file from GitHub
       const result = await GitHubApiService.getFileContent(
@@ -63,6 +67,7 @@ export const useApi = () => {
   /**
    * Save content to GitHub repository
    * Commits the changes directly to the user's repo
+   * Supports both root (/) and docs (/docs) deployment paths
    */
   const saveContent = useCallback(async (
     filename: string,
@@ -78,9 +83,12 @@ export const useApi = () => {
       }
 
       // Construct file path
-      const filePath = `data/${filename}.json`;
+      // If repoPath is "/docs", prepend "docs/" to the path
+      const repoPath = activeRepo.repoPath || '/';
+      const basePath = repoPath === '/docs' ? 'docs/' : '';
+      const filePath = `${basePath}data/${filename}.json`;
 
-      console.log(`Saving ${filePath} to ${activeRepo.owner}/${activeRepo.name}`);
+      console.log(`Saving ${filePath} to ${activeRepo.owner}/${activeRepo.name} (repoPath: ${repoPath})`);
 
       // First, get the current file to obtain its SHA (required for updates)
       const currentFile = await GitHubApiService.getFileContent(

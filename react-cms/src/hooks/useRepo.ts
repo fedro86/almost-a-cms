@@ -11,6 +11,7 @@ export interface RepoInfo {
   url: string;
   hasPages: boolean;
   pagesUrl?: string;
+  repoPath?: string;  // Repository path where files are located: "/" or "/docs"
 }
 
 const STORAGE_KEY = 'almostacms_active_repo';
@@ -48,6 +49,7 @@ export function useRepo() {
               url: `https://github.com/${context.owner}/${context.repo}`,
               hasPages: true, // Assume Pages enabled since admin is accessible
               pagesUrl: `https://${context.owner}.github.io${context.deployPath}`,
+              repoPath: context.repoPath, // "/" for root, "/docs" for docs folder
             };
             setActiveRepo(repo);
             console.log('[useRepo] Repository auto-detected:', repo);

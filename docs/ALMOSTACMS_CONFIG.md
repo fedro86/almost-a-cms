@@ -57,8 +57,11 @@ my-portfolio/
 | `created` | string | Yes | ISO 8601 timestamp of project creation |
 | `lastModified` | string | Yes | ISO 8601 timestamp of last modification |
 | `deployment` | object | Yes | Deployment configuration |
-| `deployment.path` | string | Yes | Deployment path: `"/"` or `"/docs"` |
-| `deployment.adminPath` | string | Yes | Admin path (usually `"/admin"` or `"/docs/admin"`) |
+| `deployment.path` | string | Yes | URL serving path: `"/"` or `"/repo-name/"` |
+| `deployment.adminPath` | string | Yes | Admin URL path: `"/admin"` or `"/repo-name/admin"` |
+| `deployment.source` | object | No | GitHub Pages source configuration |
+| `deployment.source.branch` | string | No | Source branch (usually `"main"`) |
+| `deployment.source.path` | string | No | Repository path: `"/"` (root) or `"/docs"` (docs folder) |
 | `deployment.githubPages` | object | Yes | GitHub Pages configuration |
 | `config` | object | Yes | Project configuration |
 | `config.template` | string | Yes | Template name used |
@@ -214,9 +217,53 @@ For existing projects created before this feature:
 }
 ```
 
+## Deployment Paths: Root vs Docs
+
+AlmostaCMS supports two deployment modes for flexibility:
+
+### Root Deployment (`deployment.source.path: "/"`)
+
+Files are located in the repository root:
+
+```
+my-portfolio/
+├── .almostacms.json
+├── index.html
+├── data/
+│   ├── about.json
+│   └── ...
+└── admin/
+    └── index.html
+```
+
+**Use case:** Dedicated portfolio/landing page repository
+
+### Docs Deployment (`deployment.source.path: "/docs"`)
+
+Files are located in the `/docs` folder, allowing source code in root:
+
+```
+my-project/
+├── src/                    ← Source code (not deployed)
+├── package.json
+├── README.md
+└── docs/                   ← Website files (deployed)
+    ├── .almostacms.json
+    ├── index.html
+    ├── data/
+    │   ├── about.json
+    │   └── ...
+    └── admin/
+        └── index.html
+```
+
+**Use case:** Project documentation site alongside source code
+
+**Important:** GitHub Pages serves `/docs` as the site root, so URLs remain the same (`username.github.io/project/` and `username.github.io/project/admin`). The `source.path` tells the admin where to read/write files in the repository.
+
 ## Example Configs
 
-### Minimal Config
+### Minimal Config (Root Deployment)
 
 ```json
 {
@@ -225,6 +272,38 @@ For existing projects created before this feature:
   "projectType": "personal-website",
   "created": "2024-01-20T12:00:00.000Z",
   "lastModified": "2024-01-20T12:00:00.000Z",
+  "deployment": {
+    "path": "/",
+    "adminPath": "/admin/",
+    "source": {
+      "branch": "main",
+      "path": "/"
+    }
+  },
+  "config": {
+    "template": "vcard-portfolio",
+    "templateVersion": "1.0.0"
+  }
+}
+```
+
+### Minimal Config (Docs Deployment)
+
+```json
+{
+  "version": "1.0.0",
+  "generator": "almostacms",
+  "projectType": "personal-website",
+  "created": "2024-01-20T12:00:00.000Z",
+  "lastModified": "2024-01-20T12:00:00.000Z",
+  "deployment": {
+    "path": "/",
+    "adminPath": "/admin/",
+    "source": {
+      "branch": "main",
+      "path": "/docs"
+    }
+  },
   "config": {
     "template": "vcard-portfolio",
     "templateVersion": "1.0.0"
