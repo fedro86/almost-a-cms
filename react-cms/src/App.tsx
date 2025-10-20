@@ -14,6 +14,7 @@ import { LandingOpenSourceForm } from './views/Admin/forms/LandingOpenSourceForm
 import { LandingSupportForm } from './views/Admin/forms/LandingSupportForm';
 import { LandingFAQForm } from './views/Admin/forms/LandingFAQForm';
 import { LandingFooterForm } from './views/Admin/forms/LandingFooterForm';
+import ProjectDashboard from './components/dashboard/ProjectDashboard';
 
 /**
  * Main Application Component
@@ -28,6 +29,16 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
 
+          {/* Protected Routes - Project Selection */}
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <ProjectDashboard />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Protected Routes - Admin Dashboard */}
           <Route
             path="/admin"
@@ -38,10 +49,10 @@ function App() {
             }
           />
 
-          {/* Legacy route - redirect to /admin */}
+          {/* Legacy route - redirect to /projects */}
           <Route
             path="/dashboard"
-            element={<Navigate to="/admin" replace />}
+            element={<Navigate to="/projects" replace />}
           />
 
           <Route

@@ -1,0 +1,10 @@
+name = "almostacms-oauth-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Worker will be available at: https://almostacms-oauth-proxy.YOUR_USERNAME.workers.dev
+
+# Secrets (configure via: wrangler secret put SECRET_NAME)
+# GITHUB_CLIENT_ID
+# GITHUB_CLIENT_SECRET
+# ALLOWED_ORIGINS

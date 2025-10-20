@@ -420,6 +420,222 @@ export class GitHubApiService {
   }
 
   /**
+   * Check if a repository is an AlmostaCMS project
+   * Looks for .almostacms.json config file
+   */
+  async isAlmostaCMSProject(owner: string, repo: string): Promise<boolean> {
+    try {
+      const result = await this.getFileContent(owner, repo, '.almostacms.json');
+
+      if (!result.success) {
+        return false;
+      }
+
+      if (!('data' in result) || !result.data) {
+        return false;
+      }
+
+      // Try to parse the config
+      const config = JSON.parse(result.data.content);
+
+      // Verify it's a valid AlmostaCMS project
+      return config.generator === 'almostacms' && config.version;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Get AlmostaCMS project configuration
+   */
+  async getProjectConfig(owner: string, repo: string) {
+    const result = await this.getFileContent(owner, repo, '.almostacms.json');
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: 'Project configuration not found'
+      };
+    }
+
+    if (!('data' in result) || !result.data) {
+      return {
+        success: false,
+        error: 'Project configuration not found'
+      };
+    }
+
+    try {
+      const config = JSON.parse(result.data.content);
+
+      return {
+        success: true,
+        data: {
+          config,
+          sha: result.data.sha
+        }
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: 'Invalid project configuration'
+      };
+    }
+  }
+
+  /**
+   * Update AlmostaCMS project configuration
+   */
+  async updateProjectConfig(
+    owner: string,
+    repo: string,
+    config: any,
+    sha: string
+  ) {
+    // Update lastModified timestamp
+    config.lastModified = new Date().toISOString();
+
+    const content = JSON.stringify(config, null, 2);
+
+    return await this.updateFileContent(
+      owner,
+      repo,
+      '.almostacms.json',
+      content,
+      sha,
+      'Update AlmostaCMS project configuration'
+    );
+  }
+
+  /**
+   * Scan user's repositories for AlmostaCMS projects
+   * Returns list of projects with their configurations
+   */
+  async listAlmostaCMSProjects() {
+    const octokit = this.getOctokit();
+
+    try {
+      // Get all user repositories
+      const { data: repos } = await octokit.repos.listForAuthenticatedUser({
+        sort: 'updated',
+        per_page: 100,
+      });
+
+      const projects = [];
+
+      // Check each repo for .almostacms.json
+      for (const repo of repos) {
+        const isProject = await this.isAlmostaCMSProject(repo.owner.login, repo.name);
+
+        if (isProject) {
+          const configResult = await this.getProjectConfig(repo.owner.login, repo.name);
+
+          if (configResult.success && 'data' in configResult && configResult.data) {
+            const pagesInfo = await this.getGitHubPagesInfo(repo.owner.login, repo.name);
+
+            projects.push({
+              repo: {
+                name: repo.name,
+                fullName: repo.full_name,
+                description: repo.description,
+                url: repo.html_url,
+                private: repo.private,
+                updatedAt: repo.updated_at,
+                createdAt: repo.created_at,
+                owner: repo.owner.login,
+              },
+              config: configResult.data.config,
+              configSha: configResult.data.sha,
+              pages: pagesInfo.success && 'data' in pagesInfo ? pagesInfo.data : null,
+            });
+          }
+        }
+      }
+
+      return {
+        success: true,
+        data: projects
+      };
+    } catch (error: any) {
+      return this.handleError(error, 'Failed to scan for AlmostaCMS projects');
+    }
+  }
+
+  /**
+   * Initialize a new AlmostaCMS project
+   * Creates .almostacms.json in an existing repository
+   */
+  async initializeProject(
+    owner: string,
+    repo: string,
+    projectType: 'personal-website' | 'landing-page',
+    metadata?: {
+      title?: string;
+      description?: string;
+      author?: string;
+    }
+  ) {
+    const octokit = this.getOctokit();
+
+    try {
+      // Get repository info for creation date
+      const { data: repoData } = await octokit.repos.get({ owner, repo });
+
+      const config = {
+        version: '1.0.0',
+        generator: 'almostacms',
+        projectType,
+        created: repoData.created_at,
+        lastModified: new Date().toISOString(),
+        config: {
+          template: projectType === 'personal-website' ? 'vcard-portfolio' : 'landing-page-basic',
+          templateVersion: '1.0.0',
+          customDomain: null,
+          theme: 'default',
+          sections: projectType === 'personal-website'
+            ? ['about', 'resume', 'portfolio', 'blog', 'contact', 'navbar', 'sidebar']
+            : ['hero', 'features', 'pricing', 'testimonials', 'faq', 'cta']
+        },
+        metadata: {
+          title: metadata?.title || 'My Website',
+          description: metadata?.description || `${projectType} created with AlmostaCMS`,
+          author: metadata?.author || owner,
+          tags: projectType === 'personal-website' ? ['portfolio', 'resume'] : ['landing-page', 'product']
+        }
+      };
+
+      const content = JSON.stringify(config, null, 2);
+
+      const result = await this.updateFileContent(
+        owner,
+        repo,
+        '.almostacms.json',
+        content,
+        undefined,
+        'Initialize AlmostaCMS project'
+      );
+
+      if (!result.success) {
+        return result;
+      }
+
+      // Also add GitHub repository topic
+      await octokit.repos.replaceAllTopics({
+        owner,
+        repo,
+        names: ['almostacms', projectType === 'personal-website' ? 'portfolio' : 'landing-page', 'github-pages']
+      });
+
+      return {
+        success: true,
+        data: config
+      };
+    } catch (error: any) {
+      return this.handleError(error, 'Failed to initialize AlmostaCMS project');
+    }
+  }
+
+  /**
    * Generic error handler
    */
   private handleError(error: any, defaultMessage: string) {

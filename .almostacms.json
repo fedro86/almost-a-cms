@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "generator": "almostacms",
+  "projectType": "personal-website",
+  "created": "2024-01-20T12:00:00.000Z",
+  "lastModified": "2024-01-20T12:00:00.000Z",
+  "config": {
+    "template": "vcard-portfolio",
+    "templateVersion": "1.0.0",
+    "customDomain": null,
+    "theme": "default",
+    "sections": ["about", "resume", "portfolio", "blog", "contact", "navbar", "sidebar"]
+  },
+  "metadata": {
+    "title": "My Portfolio",
+    "description": "Personal portfolio website created with AlmostaCMS",
+    "tags": ["portfolio", "resume", "personal"]
+  }
+}

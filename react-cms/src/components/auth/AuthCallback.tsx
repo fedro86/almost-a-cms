@@ -60,8 +60,8 @@ export function AuthCallback() {
       setStatus('success');
       setMessage('Authentication successful! Redirecting...');
 
-      // Redirect to dashboard
-      setTimeout(() => navigate('/dashboard'), 1500);
+      // Redirect to projects dashboard to select/create project
+      setTimeout(() => navigate('/projects'), 1500);
 
     } catch (err: any) {
       console.error('Callback error:', err);
