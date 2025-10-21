@@ -28,7 +28,15 @@ Improve the React admin interface:
 - Write tests
 
 ### 2. Template Contributions (Create New Templates)
-Design and build new website templates. See [docs/CREATING_TEMPLATES.md](docs/CREATING_TEMPLATES.md) for the full guide.
+Design and build new website templates using the **Template Development Kit**. The kit includes everything you need: setup wizard, validation tools, boilerplate code, and complete documentation.
+
+**Quick start:**
+```bash
+cd template-dev-kit
+./scripts/setup-template.sh
+```
+
+See [template-dev-kit/README.md](template-dev-kit/README.md) for the complete guide.
 
 ### 3. Documentation
 - Fix typos and errors
@@ -442,7 +450,8 @@ Contributors will be:
 
 ## Additional Resources
 
-- **Template Creation:** [docs/CREATING_TEMPLATES.md](docs/CREATING_TEMPLATES.md)
+- **Template Development Kit:** [template-dev-kit/README.md](template-dev-kit/README.md)
+- **Template Creation Guide:** [docs/CREATING_TEMPLATES.md](docs/CREATING_TEMPLATES.md)
 - **GitHub Device Flow:** https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow
 - **React Docs:** https://react.dev/
 - **Vite Docs:** https://vitejs.dev/
