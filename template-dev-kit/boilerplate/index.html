@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- SEO Meta Tags -->
+    <title data-json-source="settings" data-json-field="site.title">Your Name - Portfolio</title>
+    <meta name="description" data-json-source="settings" data-json-field="site.description" content="Portfolio and blog">
+    <meta name="author" data-json-source="settings" data-json-field="seo.author" content="Your Name">
+    <meta name="keywords" data-json-source="settings" data-json-field="seo.keywords" content="web developer, portfolio">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" data-json-source="settings" data-json-field="site.title" content="Your Name - Portfolio">
+    <meta property="og:description" data-json-source="settings" data-json-field="site.description" content="Portfolio and blog">
+    <meta property="og:image" data-json-source="settings" data-json-field="seo.ogImage" content="./assets/images/og-image.jpg">
+    <meta property="og:url" data-json-source="settings" data-json-field="site.url" content="https://yourdomain.com">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" data-json-source="settings" data-json-field="seo.twitterHandle" content="@yourhandle">
+    <meta name="twitter:title" data-json-source="settings" data-json-field="site.title" content="Your Name - Portfolio">
+    <meta name="twitter:description" data-json-source="settings" data-json-field="site.description" content="Portfolio and blog">
+    <meta name="twitter:image" data-json-source="settings" data-json-field="seo.ogImage" content="./assets/images/og-image.jpg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./assets/css/reset.css">
+    <link rel="stylesheet" href="./assets/css/base.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header id="header" role="banner">
+        <nav id="navbar" class="navbar" role="navigation" aria-label="Main navigation">
+            <div class="navbar-container">
+                <div class="navbar-logo" data-json-source="navbar" data-json-field="logo.text">
+                    <!-- Logo will be populated from navbar.json -->
+                </div>
+                <button class="navbar-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="navbar-menu" id="navbar-menu">
+                    <!-- Menu items will be populated from navbar.json -->
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main" role="main">
+        <!-- Hero Section -->
+        <section id="home" class="section hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title" data-json-source="about" data-json-field="name">
+                        <!-- Name will be populated from about.json -->
+                    </h1>
+                    <p class="hero-subtitle" data-json-source="about" data-json-field="title">
+                        <!-- Title will be populated from about.json -->
+                    </p>
+                    <p class="hero-bio" data-json-source="about" data-json-field="bio">
+                        <!-- Bio will be populated from about.json -->
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#contact" class="btn btn-primary">Get in Touch</a>
+                        <a href="#projects" class="btn btn-secondary">View Projects</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img data-json-source="about" data-json-field="avatar" src="" alt="Profile Picture">
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="section about">
+            <div class="container">
+                <h2 class="section-title">About Me</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p data-json-source="about" data-json-field="bio"></p>
+
+                        <h3>Skills</h3>
+                        <ul id="skills-list" class="skills-list">
+                            <!-- Skills will be populated from about.json -->
+                        </ul>
+
+                        <h3>Interests</h3>
+                        <ul id="interests-list" class="interests-list">
+                            <!-- Interests will be populated from about.json -->
+                        </ul>
+                    </div>
+                    <div class="about-social">
+                        <h3>Connect With Me</h3>
+                        <div id="social-links" class="social-links">
+                            <!-- Social links will be populated from about.json -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="section projects">
+            <div class="container">
+                <h2 class="section-title">Featured Projects</h2>
+                <div id="projects-grid" class="projects-grid">
+                    <!-- Projects will be populated from projects.json -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section id="blog" class="section blog">
+            <div class="container">
+                <h2 class="section-title">Latest Posts</h2>
+                <div id="blog-grid" class="blog-grid">
+                    <!-- Blog posts will be populated from blog.json -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section contact">
+            <div class="container">
+                <h2 class="section-title">Get In Touch</h2>
+                <div class="contact-content">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <h3>Email</h3>
+                            <p data-json-source="contact" data-json-field="email">
+                                <a href="mailto:hello@example.com">hello@example.com</a>
+                            </p>
+                        </div>
+                        <div class="contact-item">
+                            <h3>Location</h3>
+                            <p id="contact-location">
+                                <!-- Location will be populated from contact.json -->
+                            </p>
+                        </div>
+                        <div class="contact-item">
+                            <h3>Availability</h3>
+                            <p data-json-source="contact" data-json-field="availability.message">
+                                <!-- Availability will be populated from contact.json -->
+                            </p>
+                        </div>
+                    </div>
+                    <div id="contact-social" class="contact-social">
+                        <!-- Social links will be populated from contact.json -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer" class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <p class="footer-copyright" data-json-source="settings" data-json-field="footer.copyrightText">
+                    <!-- Copyright will be populated from settings.json -->
+                </p>
+                <p class="footer-credits">
+                    <span data-json-source="settings" data-json-field="footer.customText">Built with AlmostaCMS</span>
+                </p>
+                <div id="footer-social" class="footer-social">
+                    <!-- Social links will be populated from about.json -->
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="./assets/js/data-loader.js"></script>
+    <script src="./assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "Jane Developer",
+  "title": "Full Stack Developer & Designer",
+  "bio": "I'm a passionate developer who loves building beautiful, user-friendly web applications. With 5+ years of experience in modern web technologies, I specialize in creating seamless digital experiences that solve real problems.",
+  "avatar": "./assets/images/avatar.jpg",
+  "email": "hello@janedeveloper.com",
+  "location": "San Francisco, CA",
+  "social": {
+    "github": "https://github.com/janedeveloper",
+    "linkedin": "https://linkedin.com/in/janedeveloper",
+    "twitter": "https://twitter.com/janedeveloper",
+    "website": "https://janedeveloper.com"
+  },
+  "skills": [
+    "JavaScript",
+    "React",
+    "Node.js",
+    "TypeScript",
+    "Python",
+    "UI/UX Design",
+    "Git",
+    "Docker"
+  ],
+  "interests": [
+    "Open Source",
+    "Web Accessibility",
+    "Developer Tools",
+    "Photography",
+    "Hiking"
+  ],
+  "availability": {
+    "status": "open",
+    "message": "Available for freelance projects and consultations"
+  }
+}

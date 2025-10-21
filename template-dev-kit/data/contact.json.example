@@ -1,0 +1,47 @@
+{
+  "email": "hello@janedeveloper.com",
+  "phone": "+1 (555) 123-4567",
+  "location": {
+    "city": "San Francisco",
+    "state": "CA",
+    "country": "USA",
+    "timezone": "PST (UTC-8)"
+  },
+  "social": {
+    "github": {
+      "url": "https://github.com/janedeveloper",
+      "handle": "@janedeveloper"
+    },
+    "linkedin": {
+      "url": "https://linkedin.com/in/janedeveloper",
+      "handle": "Jane Developer"
+    },
+    "twitter": {
+      "url": "https://twitter.com/janedeveloper",
+      "handle": "@janedeveloper"
+    },
+    "website": {
+      "url": "https://janedeveloper.com",
+      "handle": "janedeveloper.com"
+    }
+  },
+  "availability": {
+    "status": "available",
+    "message": "Currently accepting new projects",
+    "responseTime": "Usually responds within 24 hours"
+  },
+  "workingHours": {
+    "timezone": "PST",
+    "hours": "9 AM - 6 PM (Mon-Fri)",
+    "available": true
+  },
+  "contactForm": {
+    "enabled": true,
+    "action": "https://formspree.io/f/YOUR_FORM_ID",
+    "fields": ["name", "email", "subject", "message"]
+  },
+  "calendly": {
+    "enabled": false,
+    "url": "https://calendly.com/janedeveloper/30min"
+  }
+}

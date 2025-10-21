@@ -1,0 +1,64 @@
+{
+  "site": {
+    "title": "Jane Developer - Full Stack Developer & Designer",
+    "tagline": "Building beautiful web experiences",
+    "description": "Portfolio and blog of Jane Developer, a full stack developer specializing in React, Node.js, and modern web technologies.",
+    "url": "https://janedeveloper.com",
+    "language": "en",
+    "favicon": "./assets/images/favicon.ico"
+  },
+  "seo": {
+    "keywords": ["web developer", "full stack", "react", "javascript", "portfolio"],
+    "author": "Jane Developer",
+    "ogImage": "./assets/images/og-image.jpg",
+    "twitterCard": "summary_large_image",
+    "twitterHandle": "@janedeveloper"
+  },
+  "theme": {
+    "primaryColor": "#2563eb",
+    "secondaryColor": "#7c3aed",
+    "accentColor": "#f59e0b",
+    "backgroundColor": "#ffffff",
+    "textColor": "#1f2937",
+    "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    "darkMode": {
+      "enabled": false,
+      "default": "light"
+    }
+  },
+  "typography": {
+    "headingFont": "'Inter', sans-serif",
+    "bodyFont": "'Inter', sans-serif",
+    "codeFont": "'Fira Code', 'Courier New', monospace",
+    "baseFontSize": "16px",
+    "lineHeight": "1.6"
+  },
+  "features": {
+    "blog": true,
+    "projects": true,
+    "contact": true,
+    "newsletter": false,
+    "comments": false,
+    "search": false
+  },
+  "analytics": {
+    "enabled": false,
+    "googleAnalyticsId": "",
+    "plausibleDomain": ""
+  },
+  "social": {
+    "shareButtons": true,
+    "platforms": ["twitter", "linkedin", "facebook"]
+  },
+  "performance": {
+    "lazyLoadImages": true,
+    "minifyAssets": true,
+    "cacheEnabled": true
+  },
+  "footer": {
+    "copyrightText": "© 2024 Jane Developer. All rights reserved.",
+    "showSocialLinks": true,
+    "showNavigation": true,
+    "customText": "Built with AlmostaCMS"
+  }
+}

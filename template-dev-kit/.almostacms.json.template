@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "name": "{{TEMPLATE_NAME}}",
+  "description": "{{TEMPLATE_DESCRIPTION}}",
+  "author": "{{AUTHOR_NAME}}",
+
+  "deployment": {
+    "path": "{{DEPLOYMENT_PATH}}",
+    "adminPath": "/admin/",
+    "source": {
+      "branch": "main",
+      "path": "{{SOURCE_PATH}}"
+    }
+  },
+
+  "content": {
+    "dataPath": "{{DATA_PATH}}"
+  },
+
+  "features": {
+    "darkMode": false,
+    "analytics": false,
+    "search": false
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "logo": {
+    "text": "JD",
+    "image": "./assets/images/logo.svg",
+    "alt": "Jane Developer Logo"
+  },
+  "items": [
+    {
+      "id": "home",
+      "label": "Home",
+      "url": "#home",
+      "icon": "home",
+      "active": true
+    },
+    {
+      "id": "about",
+      "label": "About",
+      "url": "#about",
+      "icon": "user"
+    },
+    {
+      "id": "projects",
+      "label": "Projects",
+      "url": "#projects",
+      "icon": "folder"
+    },
+    {
+      "id": "blog",
+      "label": "Blog",
+      "url": "#blog",
+      "icon": "edit"
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "url": "#contact",
+      "icon": "mail",
+      "highlight": true
+    }
+  ],
+  "mobileMenu": {
+    "enabled": true,
+    "breakpoint": "768px"
+  },
+  "sticky": true,
+  "transparent": false
+}

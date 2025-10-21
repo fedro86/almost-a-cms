@@ -1,0 +1,47 @@
+{
+  "projects": [
+    {
+      "id": "almostacms",
+      "title": "AlmostaCMS",
+      "description": "A decentralized, zero-cost website builder with embedded admin panel. Built with React and GitHub API for completely serverless content management.",
+      "image": "./assets/images/projects/almostacms.png",
+      "url": "https://github.com/almostacms/almost-a-cms",
+      "demoUrl": "https://almostacms.github.io/portfolio-template",
+      "tags": ["React", "GitHub API", "TypeScript", "Tailwind CSS"],
+      "featured": true,
+      "date": "2024-10"
+    },
+    {
+      "id": "task-manager",
+      "title": "Task Manager Pro",
+      "description": "A modern task management application with real-time collaboration features. Supports drag-and-drop, team workspaces, and advanced filtering.",
+      "image": "./assets/images/projects/task-manager.png",
+      "url": "https://github.com/janedeveloper/task-manager",
+      "demoUrl": "https://task-manager-demo.netlify.app",
+      "tags": ["React", "Firebase", "Material-UI", "PWA"],
+      "featured": true,
+      "date": "2024-08"
+    },
+    {
+      "id": "weather-app",
+      "title": "Weather Dashboard",
+      "description": "Beautiful weather forecast app with hourly and weekly predictions. Features location-based weather, interactive maps, and weather alerts.",
+      "image": "./assets/images/projects/weather-app.png",
+      "url": "https://github.com/janedeveloper/weather-app",
+      "demoUrl": "https://weather-dashboard-jd.vercel.app",
+      "tags": ["JavaScript", "OpenWeather API", "Chart.js"],
+      "featured": false,
+      "date": "2024-05"
+    },
+    {
+      "id": "portfolio-generator",
+      "title": "Portfolio Generator",
+      "description": "CLI tool to generate beautiful portfolio websites from a simple JSON configuration. Supports multiple themes and automated deployment to GitHub Pages.",
+      "image": "./assets/images/projects/portfolio-gen.png",
+      "url": "https://github.com/janedeveloper/portfolio-generator",
+      "tags": ["Node.js", "CLI", "GitHub Actions"],
+      "featured": false,
+      "date": "2024-03"
+    }
+  ]
+}

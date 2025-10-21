@@ -1,0 +1,52 @@
+{
+  "posts": [
+    {
+      "id": "building-almostacms",
+      "title": "Building a Decentralized CMS with GitHub Pages",
+      "excerpt": "How I built a completely serverless content management system using GitHub Device Flow and the GitHub API. No backend needed!",
+      "content": "In this post, I'll walk through the architecture and key decisions behind AlmostaCMS, a revolutionary approach to web content management...",
+      "author": "Jane Developer",
+      "date": "2024-10-15",
+      "readTime": "8 min read",
+      "image": "./assets/images/blog/almostacms-blog.jpg",
+      "tags": ["Web Development", "GitHub", "React", "Architecture"],
+      "featured": true
+    },
+    {
+      "id": "responsive-design-2024",
+      "title": "Modern Responsive Design Patterns",
+      "excerpt": "Exploring CSS Grid, Container Queries, and modern responsive design techniques that go beyond traditional media queries.",
+      "content": "Responsive design has evolved significantly in 2024. With container queries, CSS Grid, and new viewport units, we have more tools than ever...",
+      "author": "Jane Developer",
+      "date": "2024-09-28",
+      "readTime": "6 min read",
+      "image": "./assets/images/blog/responsive-design.jpg",
+      "tags": ["CSS", "Responsive Design", "Web Development"],
+      "featured": true
+    },
+    {
+      "id": "typescript-tips",
+      "title": "10 TypeScript Tips for Better Code",
+      "excerpt": "Practical TypeScript tips and patterns that will improve your code quality and developer experience.",
+      "content": "TypeScript has become the standard for large-scale JavaScript applications. Here are 10 tips I've learned over the years...",
+      "author": "Jane Developer",
+      "date": "2024-08-12",
+      "readTime": "10 min read",
+      "image": "./assets/images/blog/typescript.jpg",
+      "tags": ["TypeScript", "JavaScript", "Best Practices"],
+      "featured": false
+    },
+    {
+      "id": "open-source-journey",
+      "title": "My Open Source Journey",
+      "excerpt": "Lessons learned from contributing to and maintaining open source projects for the past 3 years.",
+      "content": "Three years ago, I made my first open source contribution. Here's what I've learned about community, collaboration, and code...",
+      "author": "Jane Developer",
+      "date": "2024-07-05",
+      "readTime": "7 min read",
+      "image": "./assets/images/blog/open-source.jpg",
+      "tags": ["Open Source", "Career", "Community"],
+      "featured": false
+    }
+  ]
+}
