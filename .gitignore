@@ -41,13 +41,20 @@ venv/
 ENV/
 env/
 
-# IDEs and Claude Code
+# IDEs
 .vscode/
 .idea/
-.claude/
 *.swp
 *.swo
 *~
+
+# Internal documentation (private)
+.internal/
+docs/temp/
+
+# Claude Code context (private)
+.claude/PROJECT_CONTEXT.md
+CLAUDE.md
 
 # OS
 .DS_Store
