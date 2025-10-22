@@ -568,7 +568,7 @@ export class GitHubApiService {
   async initializeProject(
     owner: string,
     repo: string,
-    projectType: 'personal-website' | 'landing-page',
+    projectType: string = 'personal-website',
     metadata?: {
       title?: string;
       description?: string;
@@ -588,19 +588,17 @@ export class GitHubApiService {
         created: repoData.created_at,
         lastModified: new Date().toISOString(),
         config: {
-          template: projectType === 'personal-website' ? 'vcard-portfolio' : 'landing-page-basic',
+          template: 'vcard-portfolio',
           templateVersion: '1.0.0',
           customDomain: null,
           theme: 'default',
-          sections: projectType === 'personal-website'
-            ? ['about', 'resume', 'portfolio', 'blog', 'contact', 'navbar', 'sidebar']
-            : ['hero', 'features', 'pricing', 'testimonials', 'faq', 'cta']
+          sections: ['about', 'resume', 'portfolio', 'blog', 'contact', 'navbar', 'sidebar']
         },
         metadata: {
           title: metadata?.title || 'My Website',
-          description: metadata?.description || `${projectType} created with AlmostaCMS`,
+          description: metadata?.description || `Website created with AlmostaCMS`,
           author: metadata?.author || owner,
-          tags: projectType === 'personal-website' ? ['portfolio', 'resume'] : ['landing-page', 'product']
+          tags: ['portfolio', 'resume', 'almostacms']
         }
       };
 
@@ -623,7 +621,7 @@ export class GitHubApiService {
       await octokit.repos.replaceAllTopics({
         owner,
         repo,
-        names: ['almostacms', projectType === 'personal-website' ? 'portfolio' : 'landing-page', 'github-pages']
+        names: ['almostacms', 'portfolio', 'github-pages']
       });
 
       return {

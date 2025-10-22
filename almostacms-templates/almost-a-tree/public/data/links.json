@@ -1,0 +1,36 @@
+{
+  "links": [
+    {
+      "id": "linkedin",
+      "title": "LinkedIn",
+      "url": "https://linkedin.com/in/federicoconticello",
+      "icon": "linkedin",
+      "color": "#475569",
+      "featured": true
+    },
+    {
+      "id": "medium",
+      "title": "Medium Blog",
+      "url": "https://medium.com/@federicoconticello",
+      "icon": "medium",
+      "color": "#475569",
+      "featured": true
+    },
+    {
+      "id": "scholar",
+      "title": "Google Scholar",
+      "url": "https://scholar.google.com/citations?user=EXAMPLE",
+      "icon": "scholar",
+      "color": "#475569",
+      "featured": true
+    },
+    {
+      "id": "researchgate",
+      "title": "ResearchGate",
+      "url": "https://www.researchgate.net/profile/Federico-Conticello",
+      "icon": "researchgate",
+      "color": "#475569",
+      "featured": true
+    }
+  ]
+}

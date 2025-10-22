@@ -18,7 +18,7 @@ interface AlmostaCMSProject {
   config: {
     version: string;
     generator: string;
-    projectType: 'personal-website' | 'landing-page';
+    projectType: string;
     created: string;
     lastModified: string;
     config: {
@@ -89,12 +89,8 @@ export default function ProjectDashboard() {
     localStorage.setItem('selected_repo', project.repo.name);
     localStorage.setItem('selected_owner', project.repo.owner);
 
-    // Navigate to admin panel based on project type
-    if (project.config.projectType === 'landing-page') {
-      navigate('/admin/landing-page');
-    } else {
-      navigate('/admin');
-    }
+    // Navigate to admin panel
+    navigate('/admin');
   }
 
   function handleCreateNew() {
@@ -112,11 +108,21 @@ export default function ProjectDashboard() {
   }
 
   function getProjectTypeLabel(type: string) {
-    return type === 'personal-website' ? 'Personal Website' : 'Landing Page';
+    // Convert kebab-case to Title Case
+    return type
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   function getProjectTypeIcon(type: string) {
-    return type === 'personal-website' ? '👤' : '🚀';
+    const icons: Record<string, string> = {
+      'personal-website': '👤',
+      'portfolio': '💼',
+      'blog': '📝',
+      'business': '🏢',
+    };
+    return icons[type] || '🌐';
   }
 
   if (loading) {

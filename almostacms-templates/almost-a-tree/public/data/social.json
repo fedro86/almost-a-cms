@@ -1,0 +1,19 @@
+{
+  "platforms": [
+    {
+      "name": "github",
+      "url": "https://github.com/fedro86",
+      "icon": "github"
+    },
+    {
+      "name": "twitter",
+      "url": "https://twitter.com/federicoconti",
+      "icon": "twitter"
+    },
+    {
+      "name": "email",
+      "url": "mailto:federico@example.com",
+      "icon": "email"
+    }
+  ]
+}

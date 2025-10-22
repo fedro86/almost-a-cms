@@ -1,0 +1,16 @@
+{
+  "siteTitle": "Federico Conticello - Links",
+  "seo": {
+    "description": "Connect with Federico Conticello - Innovation Program Lead. Find links to my professional profiles, blog, and research.",
+    "keywords": "Federico Conticello, innovation, research, technology, portfolio",
+    "ogImage": "/assets/images/og-image.jpg"
+  },
+  "analytics": {
+    "enabled": false,
+    "googleAnalyticsId": ""
+  },
+  "footer": {
+    "showPoweredBy": true,
+    "customText": ""
+  }
+}

@@ -53,6 +53,7 @@ env/
 docs/temp/
 
 # Claude Code context (private)
+.claude/
 .claude/PROJECT_CONTEXT.md
 CLAUDE.md
 

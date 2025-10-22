@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "templateName": "almost-a-simple-landing",
+  "templateVersion": "1.0.0",
+  "deployment": {
+    "path": "/",
+    "adminPath": "/admin/",
+    "source": {
+      "branch": "main",
+      "path": "/"
+    }
+  },
+  "content": {
+    "dataPath": "data/"
+  },
+  "build": {
+    "outputDir": "dist",
+    "baseUrl": "/"
+  }
+}

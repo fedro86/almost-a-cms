@@ -1,0 +1,29 @@
+{
+  "colors": {
+    "primary": "#3b82f6",
+    "secondary": "#8b5cf6",
+    "accent": "#10b981",
+    "background": "#f5f5f4",
+    "surface": "#ffffff",
+    "text": "#1f2937",
+    "textSecondary": "#6b7280"
+  },
+  "gradients": {
+    "background": "#f5f5f4",
+    "card": "#ffffff"
+  },
+  "fonts": {
+    "heading": "Inter, sans-serif",
+    "body": "Inter, sans-serif"
+  },
+  "borderRadius": "0.75rem",
+  "animations": {
+    "enabled": true,
+    "duration": "0.2s"
+  },
+  "layout": {
+    "maxWidth": "420px",
+    "cardSpacing": "0.75rem",
+    "containerPadding": "2.5rem"
+  }
+}
