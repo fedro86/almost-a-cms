@@ -1,9 +1,10 @@
 /**
  * Generic Section Editor
- * Placeholder editor for sections that don't have custom editors yet
+ * Visual editor that automatically generates forms from JSON structure
  */
 
 import React, { useState, useEffect } from 'react';
+import { DynamicFormEditor } from '../../components/DynamicFormEditor';
 
 interface GenericEditorProps {
   sectionId: string;
@@ -16,8 +17,8 @@ export function GenericEditor({ sectionId, sectionName, dataFile, onSave }: Gene
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [jsonText, setJsonText] = useState('');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -34,8 +35,8 @@ export function GenericEditor({ sectionId, sectionName, dataFile, onSave }: Gene
 
       const jsonData = await response.json();
       setData(jsonData);
-      setJsonText(JSON.stringify(jsonData, null, 2));
       setError(null);
+      setHasUnsavedChanges(false);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -43,26 +44,31 @@ export function GenericEditor({ sectionId, sectionName, dataFile, onSave }: Gene
     }
   }
 
+  function handleChange(newData: any) {
+    setData(newData);
+    setHasUnsavedChanges(true);
+    setError(null);
+  }
+
   function handleSave() {
     try {
-      const parsedData = JSON.parse(jsonText);
-      setData(parsedData);
       setSaveStatus('saving');
 
       // Call parent onSave callback
       if (onSave) {
-        onSave(parsedData);
+        onSave(data);
       }
 
       // Simulate save
       setTimeout(() => {
         setSaveStatus('saved');
+        setHasUnsavedChanges(false);
         setTimeout(() => setSaveStatus('idle'), 2000);
       }, 500);
 
     } catch (err: any) {
       setSaveStatus('error');
-      setError('Invalid JSON: ' + err.message);
+      setError('Failed to save: ' + err.message);
     }
   }
 
@@ -92,67 +98,57 @@ export function GenericEditor({ sectionId, sectionName, dataFile, onSave }: Gene
 
   return (
     <div className="space-y-4">
-      <div className="border-b border-gray-200 pb-4">
-        <h2 className="text-2xl font-bold text-gray-900">{sectionName}</h2>
-        <p className="text-sm text-gray-600 mt-1">Edit {dataFile}</p>
+      {/* Header with Save Button */}
+      <div className="card">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">{sectionName}</h2>
+            <p className="text-sm text-gray-600 mt-1">Edit {dataFile}</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={loadData}
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saveStatus === 'saving' || !hasUnsavedChanges}
+              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                saveStatus === 'saved'
+                  ? 'bg-green-600 text-white'
+                  : saveStatus === 'error'
+                  ? 'bg-red-600 text-white'
+                  : hasUnsavedChanges
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {saveStatus === 'saving' && 'Saving...'}
+              {saveStatus === 'saved' && '✓ Saved'}
+              {saveStatus === 'error' && '✗ Error'}
+              {saveStatus === 'idle' && (hasUnsavedChanges ? 'Save Changes' : 'No Changes')}
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <p className="text-yellow-800 text-sm">
-          ⚠️ This is a temporary JSON editor. A custom visual editor will be created for this section.
-        </p>
-      </div>
-
+      {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          JSON Data
-        </label>
-        <textarea
-          value={jsonText}
-          onChange={(e) => setJsonText(e.target.value)}
-          className="w-full h-96 px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          spellCheck={false}
+      {/* Dynamic Form Editor */}
+      {data && (
+        <DynamicFormEditor
+          data={data}
+          onChange={handleChange}
+          title={sectionName}
         />
-      </div>
-
-      <div className="flex items-center justify-between">
-        <button
-          onClick={loadData}
-          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-        >
-          Reset
-        </button>
-
-        <button
-          onClick={handleSave}
-          disabled={saveStatus === 'saving'}
-          className={`px-6 py-2 rounded-lg font-medium ${
-            saveStatus === 'saved'
-              ? 'bg-green-600 text-white'
-              : saveStatus === 'error'
-              ? 'bg-red-600 text-white'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          } ${saveStatus === 'saving' ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {saveStatus === 'saving' && 'Saving...'}
-          {saveStatus === 'saved' && '✓ Saved'}
-          {saveStatus === 'error' && '✗ Error'}
-          {saveStatus === 'idle' && 'Save Changes'}
-        </button>
-      </div>
-
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Preview Data</h3>
-        <pre className="text-xs text-gray-600 overflow-auto max-h-48">
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      </div>
+      )}
     </div>
   );
 }
