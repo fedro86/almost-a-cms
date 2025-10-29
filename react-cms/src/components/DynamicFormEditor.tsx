@@ -8,6 +8,7 @@ import {
   EyeIcon,
   EyeSlashIcon
 } from '@heroicons/react/24/outline';
+import { EmojiInput } from './EmojiPicker';
 
 /**
  * Dynamic Form Editor
@@ -27,7 +28,7 @@ interface DynamicFormEditorProps {
   title?: string;
 }
 
-type FieldType = 'text' | 'textarea' | 'url' | 'email' | 'number' | 'boolean';
+type FieldType = 'text' | 'textarea' | 'url' | 'email' | 'number' | 'boolean' | 'emoji';
 
 interface FieldMetadata {
   type: FieldType;
@@ -41,6 +42,15 @@ function detectFieldType(key: string, value: any): FieldType {
 
   if (typeof value === 'boolean') return 'boolean';
   if (typeof value === 'number') return 'number';
+
+  // Check if it's an emoji (single character that's not alphanumeric)
+  if (typeof value === 'string' && value.length <= 4 && /^[\p{Emoji}\u200d]+$/u.test(value)) {
+    return 'emoji';
+  }
+
+  if (lowerKey.includes('emoji') || lowerKey.includes('icon')) {
+    return 'emoji';
+  }
 
   if (lowerKey.includes('url') || lowerKey.includes('link') || lowerKey.includes('href')) {
     return 'url';
@@ -156,6 +166,23 @@ export const DynamicFormEditor: React.FC<DynamicFormEditorProps> = ({
     const fullPath = [...path, key];
     const fieldType = detectFieldType(key, value);
     const label = generateLabel(key);
+
+    if (fieldType === 'emoji') {
+      return (
+        <div key={key} className="flex items-center gap-3">
+          <label className="text-sm font-semibold text-gray-700 min-w-[80px]">
+            {label}
+          </label>
+          <div className="w-32">
+            <EmojiInput
+              value={value}
+              onChange={(newValue) => updateNestedValue(fullPath, newValue)}
+              placeholder="✨"
+            />
+          </div>
+        </div>
+      );
+    }
 
     if (fieldType === 'boolean') {
       return (
