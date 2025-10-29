@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { Dashboard } from './Dashboard';
-import { FormRouter } from '../components/forms/FormRouter';
+import { SectionEditorLoader } from '../components/SectionEditorLoader';
 import { useApi } from '../hooks/useApi';
 import { ContentData } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,14 +21,14 @@ export function DashboardWrapper() {
   const [currentData, setCurrentData] = useState<ContentData | null>(null);
   const { loading, error, loadContent, saveContent, clearError } = useApi();
   const { user, logout } = useAuth();
-  const { loading: repoLoading, hasActiveRepo } = useRepo();
+  const { loading: repoLoading, hasActiveRepo, isEmbedded } = useRepo();
 
-  // Redirect to setup if no active repository
+  // Redirect to setup if no active repository (but only in centralized mode, not embedded)
   useEffect(() => {
-    if (!repoLoading && !hasActiveRepo) {
+    if (!repoLoading && !hasActiveRepo && !isEmbedded) {
       navigate('/setup');
     }
-  }, [repoLoading, hasActiveRepo, navigate]);
+  }, [repoLoading, hasActiveRepo, isEmbedded, navigate]);
 
   const handleEditContent = async (filename: string) => {
     const data = await loadContent(filename);
@@ -124,7 +124,7 @@ export function DashboardWrapper() {
 
         {state === 'editing' && currentFile && currentData && (
           <div className="h-[calc(100vh-12rem)]">
-            <FormRouter
+            <SectionEditorLoader
               filename={currentFile}
               data={currentData}
               onSave={handleSaveContent}

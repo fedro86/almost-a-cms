@@ -1,65 +1,132 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+/**
+ * Dashboard Component
+ * Auto-discovers and displays available sections from template configuration
+ */
 
-export const Dashboard: React.FC = () => {
+import React from 'react';
+import { useSections, type LoadedSection } from '../hooks/useSections';
+
+interface DashboardProps {
+  onEditContent?: (filename: string) => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ onEditContent }) => {
+  const { sections, loading, error } = useSections();
+
+  // Get category color scheme
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      'link-in-bio': 'from-purple-500 via-pink-500 to-rose-500',
+      'landing-page': 'from-blue-500 via-cyan-500 to-teal-500',
+      'portfolio': 'from-orange-500 via-amber-500 to-yellow-500',
+      'blog': 'from-green-500 via-emerald-500 to-teal-500',
+      'shared': 'from-gray-500 via-slate-500 to-zinc-500'
+    };
+    return colors[category as keyof typeof colors] || colors.shared;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading sections...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-2xl mx-auto">
+        <h3 className="text-red-800 font-semibold mb-2">Error Loading Configuration</h3>
+        <p className="text-red-600 text-sm">{error}</p>
+        <p className="text-red-600 text-sm mt-2">
+          Make sure .almostacms.json exists in the template root directory.
+        </p>
+      </div>
+    );
+  }
+
+  if (sections.length === 0) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-2xl mx-auto">
+        <h3 className="text-yellow-800 font-semibold mb-2">No Sections Found</h3>
+        <p className="text-yellow-700 text-sm">
+          No sections are configured in .almostacms.json or all sections are hidden.
+        </p>
+      </div>
+    );
+  }
+
+  // Group sections by category
+  const sectionsByCategory = sections.reduce((acc, section) => {
+    if (!acc[section.category]) {
+      acc[section.category] = [];
+    }
+    acc[section.category].push(section);
+    return acc;
+  }, {} as Record<string, LoadedSection[]>);
+
   return (
     <div className="space-y-8">
       {/* Hero Section */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-          Choose Your Template
+          Content Sections
         </h1>
         <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-          Select which website template you want to edit.
+          Edit your website sections below. Changes are automatically saved to GitHub.
         </p>
       </div>
 
-      {/* Template Selection Cards */}
-      <div className="max-w-2xl mx-auto">
-        {/* Personal Website Card */}
-        <Link to="/admin/personal-website">
-          <div className="bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 rounded-xl p-8 text-white hover:shadow-2xl transition-all transform hover:scale-[1.02] cursor-pointer min-h-[300px] flex flex-col">
-            <div className="flex items-center gap-3 mb-4">
-              <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
-              <h3 className="text-2xl font-bold">Personal Website</h3>
-            </div>
+      {/* Sections by Category */}
+      {Object.entries(sectionsByCategory).map(([category, categorySections]) => (
+        <div key={category} className="space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800 capitalize">
+            {category.replace('-', ' ')}
+          </h2>
 
-            <p className="text-white text-opacity-90 mb-6 flex-grow">
-              Create a portfolio website with About, Resume, Projects, Blog, and Contact sections - perfect for developers and creatives.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {categorySections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => onEditContent?.(section.dataFile.replace('.json', ''))}
+                className="text-left"
+              >
+                <div className={`bg-gradient-to-br ${getCategoryColor(section.category)} rounded-xl p-6 text-white hover:shadow-2xl transition-all transform hover:scale-[1.02] cursor-pointer`}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{section.icon}</span>
+                      <div>
+                        <h3 className="text-xl font-bold">{section.label}</h3>
+                        {section.required && (
+                          <span className="text-xs bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
+                            Required
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-2 text-white text-opacity-90 text-sm">
-                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>7 content sections</span>
-              </div>
-              <div className="flex items-center gap-2 text-white text-opacity-90 text-sm">
-                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Perfect for portfolios & resumes</span>
-              </div>
-              <div className="flex items-center gap-2 text-white text-opacity-90 text-sm">
-                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Blog & project showcase</span>
-              </div>
-            </div>
+                  <p className="text-white text-opacity-90 text-sm mb-4">
+                    {section.description}
+                  </p>
 
-            <div className="flex items-center justify-between pt-4 border-t border-white border-opacity-20">
-              <span className="text-sm text-white text-opacity-80">Click to edit</span>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </div>
+                  <div className="flex items-center justify-between pt-3 border-t border-white border-opacity-20">
+                    <span className="text-xs text-white text-opacity-80">
+                      {section.dataFile}
+                    </span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+            ))}
           </div>
-        </Link>
-      </div>
+        </div>
+      ))}
 
       {/* Info Section */}
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 max-w-2xl mx-auto">
@@ -69,7 +136,7 @@ export const Dashboard: React.FC = () => {
         <div className="space-y-2 text-sm text-gray-700">
           <div className="flex items-start space-x-2">
             <span className="text-blue-500 mt-0.5">•</span>
-            <span>Edit your website content using the visual editor with real-time preview</span>
+            <span>Edit sections using the visual editor or JSON editor</span>
           </div>
           <div className="flex items-start space-x-2">
             <span className="text-blue-500 mt-0.5">•</span>
@@ -78,6 +145,10 @@ export const Dashboard: React.FC = () => {
           <div className="flex items-start space-x-2">
             <span className="text-blue-500 mt-0.5">•</span>
             <span>Your website is hosted for free with zero infrastructure costs</span>
+          </div>
+          <div className="flex items-start space-x-2">
+            <span className="text-blue-500 mt-0.5">•</span>
+            <span className="font-medium">Found {sections.length} section{sections.length !== 1 ? 's' : ''} in this template</span>
           </div>
         </div>
       </div>

@@ -74,3 +74,6 @@ react-cms/.env*
 
 # Admin bundle (build artifact)
 admin-bundle/
+
+# MCPs
+.playwright-mcp/

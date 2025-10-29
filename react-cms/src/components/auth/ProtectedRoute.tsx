@@ -13,8 +13,11 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Development mode bypass: allow access without auth if VITE_SKIP_AUTH is set
+  const skipAuth = import.meta.env.VITE_SKIP_AUTH === 'true';
+
   // Show loading state while checking authentication
-  if (isLoading) {
+  if (isLoading && !skipAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -25,12 +28,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // Redirect to home if not authenticated
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+  // Redirect to login if not authenticated (unless skip auth is enabled)
+  if (!isAuthenticated && !skipAuth) {
+    return <Navigate to="/auth/device-flow" replace />;
   }
 
-  // Render children if authenticated
+  // Render children if authenticated or skip auth is enabled
   return <>{children}</>;
 }
 

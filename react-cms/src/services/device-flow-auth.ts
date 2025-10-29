@@ -45,6 +45,8 @@ export interface DeviceFlowStatus {
  * Device Flow Authentication Service
  */
 export class DeviceFlowAuthService {
+  // Use proxy to bypass CORS (GitHub Device Flow API doesn't allow browser CORS)
+  private static readonly PROXY_URL = import.meta.env.VITE_GITHUB_PROXY_URL || '';
   private static readonly DEVICE_CODE_URL = 'https://github.com/login/device/code';
   private static readonly ACCESS_TOKEN_URL = 'https://github.com/login/oauth/access_token';
   private static readonly REQUIRED_SCOPES = ['repo', 'workflow'];
@@ -63,20 +65,29 @@ export class DeviceFlowAuthService {
 
       console.log('Initiating GitHub Device Flow...');
 
-      // Request device code from GitHub
-      const response = await fetch(this.DEVICE_CODE_URL, {
+      // Prepare request body for proxy
+      const requestBody = {
+        endpoint: 'device_code',
+        params: {
+          client_id: clientId,
+          scope: this.REQUIRED_SCOPES.join(' '),
+        },
+      };
+
+      // Request device code from GitHub via CORS proxy
+      const targetUrl = this.PROXY_URL || this.DEVICE_CODE_URL;
+      const response = await fetch(targetUrl, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          client_id: clientId,
-          scope: this.REQUIRED_SCOPES.join(' '),
-        }),
+        body: JSON.stringify(this.PROXY_URL ? requestBody : requestBody.params),
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Device code request failed:', errorText);
         throw new Error(`Device code request failed: ${response.status} ${response.statusText}`);
       }
 
@@ -145,7 +156,7 @@ export class DeviceFlowAuthService {
     console.log('Starting device flow polling...');
 
     // Poll GitHub API
-    const pollInterval = state.interval * 1000; // Convert to milliseconds
+    let pollInterval = state.interval * 1000; // Convert to milliseconds
     let pollCount = 0;
 
     const poll = async () => {
@@ -162,20 +173,29 @@ export class DeviceFlowAuthService {
 
         console.log(`Polling for access token (attempt ${pollCount})...`);
 
-        const response = await fetch(this.ACCESS_TOKEN_URL, {
+        // Prepare request body for proxy
+        const requestBody = {
+          endpoint: 'access_token',
+          params: {
+            client_id: clientId,
+            device_code: state.deviceCode,
+            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          },
+        };
+
+        const targetUrl = this.PROXY_URL || this.ACCESS_TOKEN_URL;
+        const response = await fetch(targetUrl, {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            client_id: clientId,
-            device_code: state.deviceCode,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-          }),
+          body: JSON.stringify(this.PROXY_URL ? requestBody : requestBody.params),
         });
 
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Token request failed:', errorText);
           throw new Error(`Token request failed: ${response.status} ${response.statusText}`);
         }
 
@@ -192,8 +212,11 @@ export class DeviceFlowAuthService {
             case 'slow_down':
               // We're polling too fast, GitHub wants us to slow down
               console.warn('Polling too fast, slowing down...');
-              // GitHub adds 5 seconds to the interval
-              // We'll just continue with current interval
+              // GitHub adds 5 seconds to the interval - we need to adjust
+              this.stopPolling();
+              pollInterval += 5000; // Add 5 seconds as per GitHub spec
+              console.log(`Adjusted poll interval to ${pollInterval / 1000} seconds`);
+              this.pollingTimer = window.setInterval(poll, pollInterval);
               break;
 
             case 'expired_token':

@@ -1,0 +1,24 @@
+{
+  "sectionTitle": "Get Started in 60 Seconds",
+  "sectionSubtitle": "Three simple steps to your new website",
+  "steps": [
+    {
+      "number": 1,
+      "icon": "👤",
+      "title": "Login with GitHub",
+      "description": "Secure OAuth authentication. No passwords to remember."
+    },
+    {
+      "number": 2,
+      "icon": "📄",
+      "title": "Choose Your Template",
+      "description": "Personal website or landing page. More templates coming soon."
+    },
+    {
+      "number": 3,
+      "icon": "✏️",
+      "title": "Start Editing",
+      "description": "Your site is live! Edit anytime with the built-in CMS."
+    }
+  ]
+}

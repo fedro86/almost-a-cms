@@ -1,0 +1,33 @@
+{
+  "sectionTitle": "Free & Open Source Forever",
+  "sectionSubtitle": "MIT Licensed, community-driven development",
+  "githubUrl": "https://github.com/almostacms/almostacms",
+  "stats": {
+    "stars": 0,
+    "forks": 0,
+    "contributors": 1,
+    "lastUpdated": "2025-10-28"
+  },
+  "callsToAction": [
+    {
+      "icon": "⭐",
+      "text": "Star on GitHub",
+      "url": "https://github.com/almostacms/almostacms"
+    },
+    {
+      "icon": "🔧",
+      "text": "Contribute Code",
+      "url": "https://github.com/almostacms/almostacms/contribute"
+    },
+    {
+      "icon": "📖",
+      "text": "Documentation",
+      "url": "https://github.com/almostacms/almostacms/docs"
+    },
+    {
+      "icon": "💡",
+      "text": "Request Features",
+      "url": "https://github.com/almostacms/almostacms/issues/new"
+    }
+  ]
+}

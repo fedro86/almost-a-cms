@@ -6,20 +6,21 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { DashboardWrapper } from './pages/DashboardWrapper';
 import { FirstTimeSetup } from './components/setup/FirstTimeSetup';
 import ProjectDashboard from './components/dashboard/ProjectDashboard';
-import { PersonalWebsiteEditor } from './views/Admin/PersonalWebsiteEditor';
 
 /**
  * Main Application Component
  * Admin panel for AlmostaCMS templates
  */
 function App() {
+  // Get base path from Vite config (injected at build time)
+  // For embedded mode: /admin/
+  // For dev mode: /
+  const basename = import.meta.env.BASE_URL;
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <AuthProvider>
         <Routes>
-          {/* Default route - redirect to projects */}
-          <Route path="/" element={<Navigate to="/projects" replace />} />
-
           {/* Authentication Routes */}
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/auth/device-flow" element={<DeviceFlowLogin />} />
@@ -34,9 +35,9 @@ function App() {
             }
           />
 
-          {/* Protected Routes - Admin Dashboard */}
+          {/* Protected Routes - Content Editor (Main Dashboard) */}
           <Route
-            path="/admin"
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <DashboardWrapper />
@@ -54,22 +55,15 @@ function App() {
             }
           />
 
-          {/* Admin - Personal Website Editor */}
-          <Route
-            path="/admin/personal-website"
-            element={
-              <ProtectedRoute>
-                <PersonalWebsiteEditor />
-              </ProtectedRoute>
-            }
-          />
-
           {/* Legacy routes */}
-          <Route path="/dashboard" element={<Navigate to="/projects" replace />} />
+          <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
           <Route path="/create" element={<Navigate to="/setup" replace />} />
 
+          {/* Default route - redirect to dashboard (for embedded mode) or projects (for standalone) */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
           {/* Catch-all redirect */}
-          <Route path="*" element={<Navigate to="/projects" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

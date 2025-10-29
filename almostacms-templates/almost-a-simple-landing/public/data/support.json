@@ -1,0 +1,78 @@
+{
+  "sectionTitle": "Support AlmostaCMS",
+  "sectionSubtitle": "Help us build the features you want",
+  "donations": {
+    "title": "One-Time Support",
+    "subtitle": "Buy me a coffee to keep the project going",
+    "options": [
+      {
+        "id": "coffee",
+        "emoji": "☕",
+        "text": "Coffee",
+        "amount": 5,
+        "url": "#"
+      },
+      {
+        "id": "beer",
+        "emoji": "🍺",
+        "text": "Beer",
+        "amount": 10,
+        "url": "#"
+      },
+      {
+        "id": "meal",
+        "emoji": "🍕",
+        "text": "Meal",
+        "amount": 20,
+        "url": "#"
+      }
+    ],
+    "monthlySupport": {
+      "emoji": "❤️",
+      "text": "Sponsor Monthly",
+      "amount": 5,
+      "url": "#"
+    }
+  },
+  "featureFunding": {
+    "title": "Fund Features You Want",
+    "subtitle": "Vote with your wallet - features get built when funded",
+    "platformUrl": "#",
+    "topFeatures": [
+      {
+        "id": "custom-domain",
+        "title": "Custom Domain Wizard",
+        "description": "Step-by-step guide to connect your own domain",
+        "fundedAmount": 400,
+        "goalAmount": 500,
+        "contributors": 23,
+        "status": "in-progress",
+        "priority": "high",
+        "url": "#"
+      },
+      {
+        "id": "analytics",
+        "title": "Advanced Analytics",
+        "description": "Page views, visitors, referrers, and more",
+        "fundedAmount": 200,
+        "goalAmount": 500,
+        "contributors": 12,
+        "status": "funded-30",
+        "priority": "medium",
+        "url": "#"
+      },
+      {
+        "id": "contact-form",
+        "title": "Contact Form Integration",
+        "description": "Receive submissions via email (no backend needed)",
+        "fundedAmount": 150,
+        "goalAmount": 300,
+        "contributors": 18,
+        "status": "funded-50",
+        "priority": "high",
+        "url": "#"
+      }
+    ],
+    "viewAllUrl": "#"
+  }
+}

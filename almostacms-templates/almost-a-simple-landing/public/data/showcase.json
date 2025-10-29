@@ -1,0 +1,33 @@
+{
+  "sectionTitle": "Built with AlmostaCMS",
+  "sectionSubtitle": "Real websites created by our users",
+  "sites": [
+    {
+      "id": "almostacms",
+      "name": "AlmostaCMS",
+      "creator": "AlmostaCMS Team",
+      "url": "https://almostacms.com",
+      "screenshot": "",
+      "template": "landing-page",
+      "featured": true
+    },
+    {
+      "id": "example-portfolio",
+      "name": "Developer Portfolio",
+      "creator": "Example User",
+      "url": "#",
+      "screenshot": "",
+      "template": "personal-website",
+      "featured": false
+    },
+    {
+      "id": "example-product",
+      "name": "Product Landing",
+      "creator": "Example Startup",
+      "url": "#",
+      "screenshot": "",
+      "template": "landing-page",
+      "featured": false
+    }
+  ]
+}

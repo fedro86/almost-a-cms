@@ -23,6 +23,24 @@ export const useApi = () => {
     setError(null);
 
     try {
+      // Check if we're in localhost development mode
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+      if (isLocalhost) {
+        // Development mode: Load directly from local files
+        console.log(`[DEV MODE] Loading ${filename}.json from local /data/ folder`);
+
+        const response = await fetch(`/data/${filename}.json`);
+        if (!response.ok) {
+          throw new Error(`Failed to load ${filename}.json (${response.status})`);
+        }
+
+        const contentData = await response.json();
+        console.log(`✅ [DEV MODE] Loaded ${filename}:`, contentData);
+        return contentData;
+      }
+
+      // Production mode: Load from GitHub API
       // Validate active repository
       if (!activeRepo) {
         throw new Error('No active repository. Please create a portfolio first.');
@@ -77,6 +95,22 @@ export const useApi = () => {
     setError(null);
 
     try {
+      // Check if we're in localhost development mode
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+      if (isLocalhost) {
+        // Development mode: Simulate save (can't actually write to disk from browser)
+        console.log(`[DEV MODE] Simulated save of ${filename}.json:`);
+        console.log(JSON.stringify(data, null, 2));
+        console.log('[DEV MODE] Note: Changes are not persisted. Edit the file in public/data/ manually.');
+
+        // Simulate delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        return true;
+      }
+
+      // Production mode: Save to GitHub
       // Validate active repository
       if (!activeRepo) {
         throw new Error('No active repository. Please create a portfolio first.');

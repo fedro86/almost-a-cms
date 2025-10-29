@@ -13,6 +13,43 @@
   "content": {
     "dataPath": "data/"
   },
+  "sections": [
+    {
+      "id": "profile",
+      "dataFile": "profile.json",
+      "order": 1,
+      "required": true,
+      "label": "Profile"
+    },
+    {
+      "id": "links",
+      "dataFile": "links.json",
+      "order": 2,
+      "required": true,
+      "label": "Links"
+    },
+    {
+      "id": "social",
+      "dataFile": "social.json",
+      "order": 3,
+      "required": false,
+      "label": "Social Media"
+    },
+    {
+      "id": "theme",
+      "dataFile": "theme.json",
+      "order": 4,
+      "required": false,
+      "label": "Theme & Colors"
+    },
+    {
+      "id": "settings",
+      "dataFile": "settings.json",
+      "order": 5,
+      "required": false,
+      "label": "Site Settings"
+    }
+  ],
   "build": {
     "outputDir": "dist",
     "baseUrl": "/"

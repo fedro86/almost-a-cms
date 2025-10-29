@@ -24,13 +24,19 @@ export function DeviceFlowLogin() {
 
   // Start device flow on component mount
   useEffect(() => {
+    // Don't start flow if already authenticated
+    if (DeviceFlowAuthService.isAuthenticated()) {
+      navigate('/dashboard');
+      return;
+    }
+
     initiateFlow();
 
     // Cleanup polling on unmount
     return () => {
       DeviceFlowAuthService.stopPolling();
     };
-  }, []);
+  }, [navigate]);
 
   // Update time remaining counter
   useEffect(() => {
@@ -87,9 +93,9 @@ export function DeviceFlowLogin() {
     // Fetch user information
     await refreshUser();
 
-    // Redirect to projects dashboard
+    // Redirect to dashboard
     setTimeout(() => {
-      navigate('/projects');
+      navigate('/dashboard');
     }, 1500);
   };
 
